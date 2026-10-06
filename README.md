@@ -13,6 +13,16 @@ git clone https://github.com/idkalem/idanaliz.git
 
 Daha önce indirdiysen klasörün içinde `git pull` yazman yeter.
 
+## İD Okul da bu depoda
+
+İD Okul (ders çalışma portalı) bu deponun **`idokul` dalında** durur. Ayrı bir klasöre indirmek için:
+
+```
+git clone -b idokul https://github.com/idkalem/idanaliz.git "İD Okul"
+```
+
+İndirdikten sonra klasördeki `İD Okul.html` dosyasına çift tıkla. Güncellemek için o klasörde `git pull`.
+
 ## Geliştirmek
 
 Node.js 22 ya da üstü gerekir.
