@@ -2,10 +2,9 @@
 import { useEffect, type CSSProperties, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
-import { X } from 'lucide-react';
+import { X, Star } from 'lucide-react';
 import { APP, dersOf, type Ders } from './content';
 import { lv, LV_NAME } from './engine';
-import type { Avatar as Av } from './store';
 
 /* ---------- Renk: ders grubu ve durum ---------- */
 /** Dersin ya da konunun grup rengi (CSS sınıfı): Türkçe mavi, Sosyal turuncu, Matematik mor, Fen yeşil. */
@@ -33,7 +32,7 @@ export function Meter({ v, max, k = '' }: { v: number; max: number; k?: string }
 }
 
 /* ---------- Özet kutusu ---------- */
-export function Tile({ label, icon, children, unit, sub, tone = '', to }: { label: ReactNode; icon?: ReactNode; children: ReactNode; unit?: ReactNode; sub?: ReactNode; tone?: '' | 'brand' | 'good' | 'mid' | 'bad' | 'seri'; to?: string }) {
+export function Tile({ label, icon, children, unit, sub, tone = '', to }: { label: ReactNode; icon?: ReactNode; children: ReactNode; unit?: ReactNode; sub?: ReactNode; tone?: '' | 'brand' | 'good' | 'mid' | 'bad' | 'seri' | 'jeton'; to?: string }) {
   const body = (
     <>
       <div className="t-l">{icon && <span className="t-ic">{icon}</span>}<span>{label}</span></div>
@@ -156,31 +155,7 @@ export function Logo({ className = 'brand-mark' }: { className?: string }) {
   );
 }
 
-/* ---------- Avatar ---------- */
-export const AV_RENK = ['#4a7df0', '#7a5be8', '#e8518d', '#f0772b', '#1baf7a', '#0e9bb5', '#e3a008', '#5b6b8c'];
-export const AV_GOZ = ['Yuvarlak', 'Gülen', 'Meraklı'];
-/** Aksesuarlar seviye ile açılır. */
-export const AV_AKS: { ad: string; lv: number }[] = [{ ad: 'Yok', lv: 1 }, { ad: 'Gözlük', lv: 2 }, { ad: 'Kulaklık', lv: 3 }, { ad: 'Bere', lv: 4 }, { ad: 'Taç', lv: 6 }];
-export function Avatar({ a, size = 40 }: { a: Av; size?: number }) {
-  const c = AV_RENK[a.renk % AV_RENK.length], ink = '#1b1f33';
-  return (
-    <svg className="av" width={size} height={size} viewBox="0 0 100 100" aria-hidden="true">
-      <circle cx="50" cy="50" r="50" fill={c} opacity="0.2" />
-      <path d="M50 22c19 0 31 13 31 33 0 20-12 32-31 32S19 75 19 55c0-20 12-33 31-33z" fill={c} />
-      <ellipse cx="50" cy="70" rx="17" ry="11" fill="#fff" opacity="0.22" />
-      <circle cx="31" cy="62" r="5.5" fill="#ff7b9c" opacity="0.5" /><circle cx="69" cy="62" r="5.5" fill="#ff7b9c" opacity="0.5" />
-      {a.goz === 1 ? (
-        <g fill="none" stroke={ink} strokeWidth="3.4" strokeLinecap="round"><path d="M33 52q6-8 12 0" /><path d="M55 52q6-8 12 0" /></g>
-      ) : a.goz === 2 ? (
-        <g><circle cx="39" cy="50" r="10" fill="#fff" /><circle cx="61" cy="50" r="10" fill="#fff" /><circle cx="41.5" cy="47.5" r="5" fill={ink} /><circle cx="63.5" cy="47.5" r="5" fill={ink} /><circle cx="43" cy="45.5" r="1.7" fill="#fff" /><circle cx="65" cy="45.5" r="1.7" fill="#fff" /></g>
-      ) : (
-        <g><circle cx="39" cy="50" r="7.5" fill="#fff" /><circle cx="61" cy="50" r="7.5" fill="#fff" /><circle cx="39.5" cy="50.5" r="3.8" fill={ink} /><circle cx="61.5" cy="50.5" r="3.8" fill={ink} /></g>
-      )}
-      <path d="M42 66q8 7 16 0" fill="none" stroke={ink} strokeWidth="3.2" strokeLinecap="round" />
-      {a.aks === 1 && <g fill="none" stroke={ink} strokeWidth="3"><circle cx="39" cy="50" r="11" /><circle cx="61" cy="50" r="11" /><path d="M50 50h0M28 49l-6-3M72 49l6-3" strokeLinecap="round" /></g>}
-      {a.aks === 2 && <g><path d="M21 54a29 29 0 0 1 58 0" fill="none" stroke={ink} strokeWidth="5" strokeLinecap="round" /><rect x="13" y="46" width="12" height="20" rx="6" fill={ink} /><rect x="75" y="46" width="12" height="20" rx="6" fill={ink} /></g>}
-      {a.aks === 3 && <g><path d="M24 38c2-22 50-22 52 0z" fill="#e5484d" /><rect x="22" y="34" width="56" height="9" rx="4.5" fill="#fff" /><circle cx="50" cy="17" r="6.5" fill="#fff" /></g>}
-      {a.aks === 4 && <path d="M30 32l4-18 9 10 7-14 7 14 9-10 4 18z" fill="#ffd43b" stroke="#d68a00" strokeWidth="2.4" strokeLinejoin="round" />}
-    </svg>
-  );
+/* ---------- Yıldızlar: kavrama testinin sonucu ---------- */
+export function Yildizlar({ n, size = 16 }: { n: number; size?: number }) {
+  return <span className="yildizlar" title={`${n} / 3 yıldız`}>{[1, 2, 3].map((i) => <Star key={i} size={size} className={i <= n ? 'on' : ''} />)}</span>;
 }

@@ -2,12 +2,14 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { motion } from 'motion/react';
-import { X, ChevronLeft, ChevronRight, Volume2, Square, Shuffle, Check, ListChecks } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, Volume2, Square, Shuffle, Check, ListChecks, Sparkles } from 'lucide-react';
 import { konuBul, type Konu } from '../content';
 import { useStore, kartBitir, toast } from '../store';
 import { M } from '../math';
-import { kOf, useTitle, Card, Empty } from '../ui';
+import { kOf, useTitle, Card, Empty, Drawer } from '../ui';
 import { Secenekler, KartGovde, Takil, useSes, sesVar, kartMetni } from '../parca';
+import { Sohbet } from '../sohbet';
+import { sistem, kartBaglami } from '../ai';
 
 export default function Anlatim() {
   const { id } = useParams();
@@ -48,6 +50,7 @@ function KartEkrani({ konu, i, git }: { konu: Konu; i: number; git: (i: number) 
   const bitmis = st.kart[`${konu.id}/${kart.id}`] != null;
   const [sec, setSec] = useState<number | null>(null);
   const [baska, setBaska] = useState(false);
+  const [aiAcik, setAiAcik] = useState(false);
   const ses = useSes();
   const dogru = sec === soru.d;
   useEffect(() => { if (st.kisisel.acik && st.kisisel.dinle) ses.oku(kartMetni(kart)); }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -67,6 +70,7 @@ function KartEkrani({ konu, i, git }: { konu: Konu; i: number; git: (i: number) 
           {sesVar && (ses.okuyor
             ? <button className="btn on" onClick={ses.sus}><Square size={14} />Durdur</button>
             : <button className="btn" onClick={() => ses.oku(kartMetni(kart))}><Volume2 size={15} />Dinle</button>)}
+          <button className="btn" onClick={() => setAiAcik(true)}><Sparkles size={15} />Yapay zekâya sor</button>
         </div>
         <div className="anla">
           <h2>Anladın mı?</h2>
@@ -89,6 +93,9 @@ function KartEkrani({ konu, i, git }: { konu: Konu; i: number; git: (i: number) 
           {i + 1 < konu.kartlar.length ? 'Sonraki kart' : 'Özete geç'}<ChevronRight size={18} />
         </button>
       </div>
+      <Drawer open={aiAcik} onClose={() => setAiAcik(false)} label={`${kart.baslik}: yapay zekâ öğretmen`}>
+        <Sohbet sistem={sistem(kartBaglami(konu, kart), 'Öğrenci bu anlatım kartını okuyor. Karttaki "Anladın mı?" sorusunun cevabını söyleme.')} oneriler={['Bunu günlük hayattan bir örnekle anlat', 'Daha basit anlat', 'Bana bu karttan bir soru sor']} />
+      </Drawer>
     </motion.div>
   );
 }

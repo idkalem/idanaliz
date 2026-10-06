@@ -1,12 +1,14 @@
 // Rapor: ne kadar çalıştım, nerede zorlanıyorum, hangi hatayı tekrar ediyorum.
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ListChecks, Percent, CalendarDays, RotateCcw, Printer, ChevronRight, TriangleAlert, BookOpen } from 'lucide-react';
-import { useStore, bugun } from '../store';
-import { ozet, ozetCumle, tekrarBak, hatalar, bekleyenler, konuDurum, dersDurum, haftaBasi, gunAd, tarih, lv, HAZIR, DERSLER, type Hata } from '../engine';
+import { ListChecks, Percent, CalendarDays, RotateCcw, Printer, ChevronRight, TriangleAlert, BookOpen, Sparkles, MessageSquareText } from 'lucide-react';
+import { useStore, useKok, bugun, type State } from '../store';
+import { ozet, ozetCumle, tekrarBak, hatalar, bekleyenler, konuDurum, dersDurum, haftaBasi, gunAd, tarih, lv, hataTurleri, kocNotu, HAZIR, DERSLER, type Hata } from '../engine';
 import { M } from '../math';
 import { Page, Card, Tile, Seg, Empty, PctBar, LevelTag, Drawer, kOf } from '../ui';
 import { KartGovde } from '../parca';
+import { sor, sistem } from '../ai';
+import { Yazi } from '../sohbet';
 
 export default function Rapor() {
   const st = useStore();
@@ -17,7 +19,7 @@ export default function Rapor() {
   const konular = HAZIR.map((k) => ({ k, s: konuDurum(st, k) })).filter((r) => r.s.basladi);
   const dersler = DERSLER.map((x) => ({ x, s: dersDurum(st, x) })).filter((r) => r.s.coz > 0);
   const ilk = haftaBasi(d) - 21;
-  const l = lv(o.oran);
+  const l = lv(o.oran), ht = hataTurleri(st, since);
   const hataKart = hata && hata.konu.kartlar.find((c) => c.id === hata.konu.sorular.find((s) => s.id === hata.sorular[0])?.kart);
 
   return (
@@ -30,6 +32,7 @@ export default function Rapor() {
       </>}
     >
       <p className="lead-line"><M>{ozetCumle(st, n)}</M></p>
+      <Koc st={st} />
       <div className="tiles">
         <Tile label="Çözülen soru" icon={<ListChecks size={17} />} tone="brand" sub={`${o.kart} anlatım kartı bitti`}>{o.soru}</Tile>
         <Tile label="Doğru oranı" icon={<Percent size={17} />} tone={l === 'none' ? '' : l} sub={o.eminYanlis ? `${o.eminYanlis} soruda emin olup yanıldın` : o.soru ? `${o.dogru} doğru, ${o.soru - o.dogru} yanlış` : 'Henüz soru çözülmedi'}>{o.oran == null ? '–' : `%${Math.round(o.oran)}`}</Tile>
@@ -79,6 +82,21 @@ export default function Rapor() {
         </div>
 
         <div className="stack">
+          <Card title="Yanlışların neden oluyor?" hint="Kayıtlarından çıkarılan bir tahmin">
+            {ht.top ? (
+              <>
+                <div className="yigin" role="img" aria-label={`${ht.bilgi} yanlış bilgi, ${ht.eksik} bilgi eksiği, ${ht.dikkat} dikkatsizlik`}>
+                  {ht.bilgi > 0 && <i className="k-bad" style={{ flex: ht.bilgi }} />}
+                  {ht.eksik > 0 && <i className="k-mid" style={{ flex: ht.eksik }} />}
+                  {ht.dikkat > 0 && <i className="k-brand" style={{ flex: ht.dikkat }} />}
+                </div>
+                <div className="ayar k-bad"><i className="nokta" /><div className="grow"><b>Yanlış bildiğin</b><small>Emin olup yanıldın. Kuralı yanlış biliyorsun: anlatımı yeniden oku.</small></div><b className="num">{ht.bilgi}</b></div>
+                <div className="ayar k-mid"><i className="nokta" /><div className="grow"><b>Eksik bildiğin</b><small>Emin değildin. Konuyu pekiştir, yanlışlarını tekrar et.</small></div><b className="num">{ht.eksik}</b></div>
+                <div className="ayar k-brand"><i className="nokta" /><div className="grow"><b>Dikkatsizlik</b><small>İyi olduğun konuda bir kez yaptığın hata. Soruyu yavaş oku.</small></div><b className="num">{ht.dikkat}</b></div>
+              </>
+            ) : <Empty title="Bu dönemde yanlış yok" />}
+          </Card>
+
           <Card title="En sık yaptığın hatalar" hint="Yanlış seçeneklerinden çıkarıldı" flush>
             {hs.length ? (
               <div className="list">
@@ -133,5 +151,34 @@ export default function Rapor() {
         )}
       </Drawer>
     </Page>
+  );
+}
+
+/** Koç notu: kayıtlardan kurulan üç cümle. Anahtar girilmişse yapay zekâ daha ayrıntılı yazar. */
+function Koc({ st }: { st: State }) {
+  const kok = useKok();
+  const [yazi, setYazi] = useState<string | null>(null);
+  const [hata, setHata] = useState('');
+  const [bekle, setBekle] = useState(false);
+  const kes = useRef<AbortController | null>(null);
+  const not = kocNotu(st);
+  const yaz = async () => {
+    setBekle(true); setHata(''); setYazi('');
+    kes.current = new AbortController();
+    const konular = HAZIR.map((k) => ({ k, s: konuDurum(st, k) })).filter((r) => r.s.basladi).map((r) => `- ${r.k.ad}: anlatım ${r.s.kart}/${r.s.kartTop}, ${r.s.coz} soru çözüldü${r.s.oran != null ? `, doğru oranı %${Math.round(r.s.oran)}` : ''}, yanlış defterinde ${r.s.defter} soru`);
+    const hs = hatalar(st).slice(0, 5).map((h) => `- ${h.konu.ad}: ${h.yan.ad} (${h.n} kez)`);
+    const o7 = ozet(st, 7), t = hataTurleri(st);
+    const veri = [`Son 7 gün: ${o7.gunSay} gün çalışıldı, ${o7.soru} soru, doğru oranı ${o7.oran == null ? 'yok' : `%${Math.round(o7.oran)}`}.`, `Bugün tekrar bekleyen soru: ${bekleyenler(st).length}.`, 'Konular:', ...konular, 'En sık hatalar:', ...(hs.length ? hs : ['- yok']), `Yanlış türleri (tahmin): emin olup yanılma ${t.bilgi}, emin değilken yanlış ${t.eksik}, dikkatsizlik ${t.dikkat}.`].join('\n');
+    try {
+      await sor({ sistem: sistem(veri, 'Bu konuşmada soru çözmeyeceksin. Bağlamdaki çalışma kayıtlarına bakıp öğrenciye haftalık bir koç notu yaz: bir cümle neyin iyi gittiği, sonra en çok üç maddelik "Bu hafta şunu yap" listesi. Her madde somut olsun (hangi konu, ne yapılacak). Toplam 90 kelimeyi geçme. Kayıtlarda olmayan bir şey uydurma.'), mesajlar: [{ rol: 'user', metin: 'Bu haftaki koç notumu yazar mısın?' }], onParca: setYazi, signal: kes.current.signal, enCok: 500 });
+    } catch (e) { if ((e as Error).name !== 'AbortError') { setHata((e as Error).message); setYazi(null); } }
+    finally { setBekle(false); }
+  };
+  return (
+    <Card title="Koç notu" icon={<MessageSquareText size={17} />} style={{ marginBottom: 18 }} className="koc" action={kok.ai.anahtar ? <button className="btn no-print" disabled={bekle} onClick={() => void yaz()}><Sparkles size={15} />{yazi ? 'Yeniden yazdır' : 'Yapay zekâya yazdır'}</button> : undefined}>
+      {yazi ? <Yazi>{yazi}</Yazi> : <ul className="ozet-l">{not.map((x, i) => <li key={i}><ChevronRight size={18} /><span><M>{x}</M></span></li>)}</ul>}
+      {hata && <p className="note" style={{ marginTop: 10, color: 'var(--bad-ink)' }}>{hata}</p>}
+      {!kok.ai.anahtar && <p className="note no-print" style={{ marginTop: 12 }}>Bu not kayıtlarından otomatik kuruldu. Profil'den yapay zekâ anahtarı girilirse daha ayrıntılı, haftaya özel bir not yazdırabilirsin.</p>}
+    </Card>
   );
 }

@@ -37,6 +37,9 @@ export const DERSLER: Ders[] = [
   d('din', 'Din Kültürü', 'sos', ['Bilgi ve İnanç', 'İslam ve İbadet', 'Ahlak ve Değerler', 'Hz. Muhammed\'in Hayatı']),
 ];
 
+/** Bir konudan önce bitirilmesi işi kolaylaştıran konular. Yol haritasında not olarak görünür; kilitlemez. */
+export const ONKOSUL: Record<string, string[]> = { 'mat-koklu': ['mat-uslu'] };
+
 export const konuBul = (id: string): Konu | undefined => KONULAR[id];
 export const dersOf = (konuId: string): Ders => DERSLER.find((x) => x.konular.some((k) => k.id === konuId)) ?? DERSLER[0];
 /** İçeriği hazır konular, müfredat sırasıyla. */

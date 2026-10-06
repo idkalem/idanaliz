@@ -1,36 +1,49 @@
 import { useEffect } from 'react';
 import { HashRouter, Routes, Route, NavLink, Link, useLocation, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'motion/react';
-import { House, BookOpen, RotateCcw, ChartColumn, UserRound, ArrowLeft, ArrowRight, Sun, Moon, Flame, Zap, type LucideIcon } from 'lucide-react';
+import { House, BookOpen, RotateCcw, ChartColumn, UserRound, ArrowLeft, ArrowRight, Sun, Moon, Flame, Zap, Coins, CalendarRange, Sparkles, Users, LogOut, type LucideIcon } from 'lucide-react';
 import { APP } from './content';
-import { useStore, useUi, set } from './store';
+import { useStore, useKok, useUi, setKok, cikis } from './store';
 import { bekleyenler, seri } from './engine';
-import { Logo, Avatar, Page, Card, Empty } from './ui';
+import { Logo, Page, Card, Empty } from './ui';
+import { Avatar } from './avatar';
+import Giris from './pages/Giris';
 import Bugun from './pages/Bugun';
 import { Dersler, DersSayfa, KonuSayfa } from './pages/Dersler';
 import Anlatim from './pages/Anlatim';
-import { TestSayfa, TekrarSayfa } from './pages/Oturum';
+import { TestSayfa, TekrarSayfa, TaramaSayfa } from './pages/Oturum';
 import Yanlislar from './pages/Yanlislar';
+import Program from './pages/Program';
+import Zeka from './pages/Zeka';
 import Rapor from './pages/Rapor';
 import Profil from './pages/Profil';
+import Sinif from './pages/Sinif';
 
-const NAV: { to: string; label: string; icon: LucideIcon; k: string; also?: string[] }[] = [
+interface Nav { to: string; label: string; icon: LucideIcon; k: string; also?: string[] }
+const DERSLER_NAV: Nav = { to: '/dersler', label: 'Dersler', icon: BookOpen, k: '#6a4fe0', also: ['/ders/', '/konu/'] };
+const PROFIL_NAV: Nav = { to: '/profil', label: 'Profil', icon: UserRound, k: '#f0772b' };
+const NAV_OGRENCI: Nav[] = [
   { to: '/', label: 'Bugün', icon: House, k: '#2b6fe8' },
-  { to: '/dersler', label: 'Dersler', icon: BookOpen, k: '#6a4fe0', also: ['/ders/', '/konu/'] },
+  DERSLER_NAV,
+  { to: '/program', label: 'Program', icon: CalendarRange, k: '#0e9bb5', also: ['/tarama'] },
   { to: '/tekrar', label: 'Yanlışlarım', icon: RotateCcw, k: '#e5484d' },
+  { to: '/ai', label: 'Yapay zekâ', icon: Sparkles, k: '#c2409a' },
   { to: '/rapor', label: 'Rapor', icon: ChartColumn, k: '#1baf7a' },
-  { to: '/profil', label: 'Profil', icon: UserRound, k: '#f0772b' },
+  PROFIL_NAV,
 ];
+const NAV_OGRETMEN: Nav[] = [{ to: '/', label: 'Sınıf', icon: Users, k: '#2b6fe8' }, DERSLER_NAV, { to: '/ai', label: 'Yapay zekâ', icon: Sparkles, k: '#c2409a' }, PROFIL_NAV];
 
 function Shell() {
-  const st = useStore();
+  const st = useStore(), kok = useKok();
   const loc = useLocation(), nav = useNavigate();
   useEffect(() => { window.scrollTo(0, 0); }, [loc.pathname]);
+  if (!kok.aktif) return <><Giris /><Toast /></>;
+  const ogretmen = st.rol === 'ogretmen', NAV = ogretmen ? NAV_OGRETMEN : NAV_OGRENCI;
   const bek = bekleyenler(st).length;
   return (
     <div className="app">
       <aside className="side no-print">
-        <Link to="/" className="brand"><Logo /><div><b>{APP}</b><small>TYT çalışma portalı</small></div></Link>
+        <Link to="/" className="brand"><Logo /><div><b>{APP}</b><small>{ogretmen ? 'Öğretmen ekranı' : 'TYT çalışma portalı'}</small></div></Link>
         <nav className="nav">
           {NAV.map((n) => {
             const on = n.to === '/' ? loc.pathname === '/' : loc.pathname.startsWith(n.to) || !!n.also?.some((a) => loc.pathname.startsWith(a));
@@ -43,20 +56,26 @@ function Shell() {
             );
           })}
         </nav>
-        <div className="side-foot"><b>Kayıt bu cihazda</b>Çalışman yalnızca bu tarayıcıda saklanır.</div>
+        <div className="side-foot">
+          <button className="side-cik" onClick={() => { cikis(); nav('/'); }}><LogOut size={15} />Çıkış yap</button>
+          <b>Kayıt bu cihazda</b>Hesaplar yalnızca bu tarayıcıda saklanır.
+        </div>
       </aside>
       <div className="main">
         <header className="top no-print">
           <button className="btn ghost icon" aria-label="Geri" onClick={() => nav(-1)}><ArrowLeft size={18} /></button>
           <button className="btn ghost icon hide-s" aria-label="İleri" onClick={() => nav(1)}><ArrowRight size={18} /></button>
           <span className="grow" />
-          <span className="say seri" title="Art arda çalıştığın gün"><Flame size={17} />{seri(st.gun)}<small>gün</small></span>
-          <span className="say xp" title="Toplam puan"><Zap size={17} />{st.xp}<small>XP</small></span>
-          <button className="btn ghost icon" aria-label={st.theme === 'dark' ? 'Açık tema' : 'Koyu tema'} onClick={() => set({ theme: st.theme === 'dark' ? 'light' : 'dark' })}>{st.theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}</button>
-          <Link to="/profil" className="av-btn" aria-label="Profil"><Avatar a={st.avatar} size={34} /></Link>
+          {!ogretmen && <>
+            <span className="say seri" title="Art arda çalıştığın gün"><Flame size={17} />{seri(st)}<small>gün</small></span>
+            <span className="say xp hide-s" title="Toplam puan"><Zap size={17} />{st.xp}<small>XP</small></span>
+            <Link to="/profil" className="say jeton" title="Jetonların"><Coins size={17} />{st.jeton}</Link>
+          </>}
+          <button className="btn ghost icon" aria-label={kok.tema === 'dark' ? 'Açık tema' : 'Koyu tema'} onClick={() => setKok({ tema: kok.tema === 'dark' ? 'light' : 'dark' })}>{kok.tema === 'dark' ? <Sun size={18} /> : <Moon size={18} />}</button>
+          <Link to="/profil" className="av-btn" aria-label={`${st.ad}: profil`} title={st.ad}><Avatar a={st.avatar} size={34} /></Link>
         </header>
         <Routes>
-          <Route path="/" element={<Bugun />} />
+          <Route path="/" element={ogretmen ? <Sinif /> : <Bugun />} />
           <Route path="/dersler" element={<Dersler />} />
           <Route path="/ders/:id" element={<DersSayfa />} />
           <Route path="/konu/:id" element={<KonuSayfa />} />
@@ -64,9 +83,13 @@ function Shell() {
           <Route path="/konu/:id/test" element={<TestSayfa />} />
           <Route path="/tekrar" element={<Yanlislar />} />
           <Route path="/tekrar/coz" element={<TekrarSayfa key={loc.search} />} />
+          <Route path="/tarama" element={<TaramaSayfa />} />
+          <Route path="/program" element={<Program />} />
+          <Route path="/ai" element={<Zeka />} />
           <Route path="/rapor" element={<Rapor />} />
           <Route path="/profil" element={<Profil />} />
-          <Route path="*" element={<Page title="Sayfa bulunamadı"><Card><Empty title="Aradığın sayfa yok"><Link className="btn pri" to="/" style={{ marginTop: 12 }}>Bugün'e dön</Link></Empty></Card></Page>} />
+          <Route path="/sinif" element={<Sinif />} />
+          <Route path="*" element={<Page title="Sayfa bulunamadı"><Card><Empty title="Aradığın sayfa yok"><Link className="btn pri" to="/" style={{ marginTop: 12 }}>Ana ekrana dön</Link></Empty></Card></Page>} />
         </Routes>
       </div>
       <Toast />
