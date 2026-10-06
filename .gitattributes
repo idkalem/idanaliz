@@ -1,0 +1,4 @@
+# Satır sonları her bilgisayarda aynı kalsın (Windows dahil).
+* text=auto eol=lf
+*.woff2 binary
+*.png binary
