@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="light dark" />
+    <title>İD Analiz</title>
+    <script>
+      try {
+        var s = JSON.parse(localStorage.getItem('netlik.v1') || '{}');
+        document.documentElement.dataset.theme = s.theme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      } catch (e) {
+        document.documentElement.dataset.theme = 'light';
+      }
+      // Bu dosya doğrudan (çift tıklayarak) açılırsa uygulama yüklenemez; boş sayfa yerine ne yapılacağı yazılır.
+      setTimeout(function () {
+        var r = document.getElementById('root');
+        if (r && !r.childElementCount) {
+          r.innerHTML = '<div style="max-width:520px;margin:18vh auto;padding:0 24px;font:16px/1.5 system-ui,sans-serif">' +
+            '<h1 style="font-size:22px;margin:0 0 10px">İD Analiz bu dosyadan açılmaz</h1>' +
+            '<p style="margin:0">Aynı klasördeki <b>İD Analiz.html</b> dosyasını çift tıklayın. Kurulum ya da internet gerekmez.</p></div>';
+        }
+      }, 2500);
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

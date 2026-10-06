@@ -1,0 +1,489 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<title>İD Analiz — tanıtım filmi</title>
+<style>
+@font-face { font-family: Heros; src: url(fonts/heros-regular.otf); font-weight: 400; }
+@font-face { font-family: Heros; src: url(fonts/heros-bold.otf); font-weight: 700; }
+html, body { margin: 0; background: #000; overflow: hidden; }
+#stage { position: relative; width: 1920px; height: 1080px; overflow: hidden; background: #06070e; color: #fff; font-family: Heros, Helvetica, Arial, sans-serif; transform-origin: 0 0; }
+#glow { position: absolute; inset: -300px; background:
+  radial-gradient(1000px 760px at 24% 22%, rgba(111,127,238,.42), transparent 70%),
+  radial-gradient(1000px 860px at 82% 86%, rgba(74,63,214,.46), transparent 70%),
+  radial-gradient(640px 520px at 78% 14%, rgba(255,122,61,.13), transparent 70%); }
+#cam { position: absolute; left: 0; top: 0; transform-origin: 0 0; will-change: transform; }
+#win { position: absolute; left: 0; top: 0; width: 1440px; border-radius: 14px; overflow: hidden; background: #f3f4fa; box-shadow: 0 40px 120px rgba(0,0,0,.6), 0 0 0 1px rgba(255,255,255,.1); }
+#win img { position: absolute; left: 0; top: 0; width: 1440px; display: none; opacity: 0; }
+#spot { position: absolute; box-sizing: border-box; border: 3px solid #ff9a3d; border-radius: 14px; box-shadow: 0 0 0 3px rgba(255,154,61,.28), 0 0 0 5000px rgba(8,10,26,.46); opacity: 0; z-index: 999; }
+#scrim { position: absolute; left: 0; right: 0; bottom: 0; height: 440px; opacity: 0; background: linear-gradient(to top, rgba(5,6,14,.97) 0%, rgba(5,6,14,.88) 36%, rgba(5,6,14,.5) 70%, rgba(5,6,14,0) 100%); }
+#ov, #caps, #cards { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; }
+.anc { position: absolute; left: 0; top: 0; width: 0; height: 0; }
+.pill { position: absolute; white-space: nowrap; font-size: 31px; font-weight: 700; letter-spacing: -.01em; padding: 13px 24px 14px; border-radius: 999px; background: #0b0c18; box-shadow: 0 14px 40px rgba(0,0,0,.45), 0 0 0 1.5px rgba(255,255,255,.18); opacity: 0; }
+.arw { position: absolute; left: 0; top: 0; overflow: visible; filter: drop-shadow(0 2px 5px rgba(0,0,0,.5)); }
+.arw path { fill: none; stroke: #ff9a3d; stroke-width: 5; stroke-linecap: round; stroke-linejoin: round; }
+.arw .hd { opacity: 0; }
+.rip { position: absolute; left: -34px; top: -34px; width: 68px; height: 68px; box-sizing: border-box; border-radius: 50%; border: 5px solid #ff9a3d; background: rgba(255,154,61,.2); opacity: 0; }
+#cursor { position: absolute; left: 0; top: 0; transform-origin: 0 0; opacity: 0; filter: drop-shadow(0 6px 10px rgba(0,0,0,.45)); }
+.cap { position: absolute; left: 140px; right: 140px; bottom: 80px; text-align: center; }
+.cm { font-size: 66px; font-weight: 700; letter-spacing: -.026em; line-height: 1.13; }
+.cs { font-size: 34px; font-weight: 400; margin-top: 14px; opacity: 0; }
+.w { display: inline-block; opacity: 0; padding-bottom: .08em; }
+.ac { background: linear-gradient(90deg, #ffd34a, #ff7a59); -webkit-background-clip: text; background-clip: text; color: transparent; }
+#black { position: absolute; inset: 0; background: #000; opacity: 1; }
+.card { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; font-size: 156px; font-weight: 700; letter-spacing: -.042em; line-height: 1.03; }
+.lg { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; gap: 48px; opacity: 0; }
+.lg svg { overflow: visible; flex: none; }
+.wm { font-size: 168px; font-weight: 700; letter-spacing: -.04em; opacity: 0; white-space: nowrap; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="glow"></div>
+  <div id="cam"><div id="win"><div id="spot"></div></div></div>
+  <div id="scrim"></div>
+  <div id="ov"></div>
+  <div id="caps"></div>
+  <svg id="cursor" width="46" height="58" viewBox="0 0 23 29"><path d="M1.5 1.5v21l5.6-5 3.9 9 3.6-1.5-3.9-8.9h7.6z" fill="#111" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/></svg>
+  <div id="black"></div>
+  <div id="cards"></div>
+</div>
+<script src="node_modules/gsap/dist/gsap.min.js"></script>
+<script src="shots/shots.js"></script>
+<script>
+// Film betiği: tek duraklatılmış zaman çizgisi; window.seek(t) istenen ana gider.
+const $ = (s) => document.querySelector(s);
+const stage = $('#stage'), camEl = $('#cam'), win = $('#win'), spotEl = $('#spot'), ov = $('#ov'), caps = $('#caps'), cursorEl = $('#cursor'), black = $('#black'), cards = $('#cards'), scrim = $('#scrim');
+const mk = (tag, cls, parent, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; parent.appendChild(e); return e; };
+
+const P = {}, IMG = {};
+for (const p of SHOTS) for (const s of p.states) P[p.id + (s.name ? '-' + s.name : '')] = { h: p.h, file: s.file, r: s.rects };
+for (const k in P) { const n = mk('img', '', win); n.src = 'shots/' + P[k].file; n.style.height = P[k].h + 'px'; IMG[k] = n; }
+
+const tl = gsap.timeline({ paused: true });
+const EVENTS = [], anchors = [];
+const ev = (t, k) => EVENTS.push({ t: +t.toFixed(3), k });
+const FY = 450, CX = 960;
+const camO = { x: 720, y: 333, s: 1.2 }, cur = { x: 720, y: 400, o: 0, k: 1 };
+
+function apply() {
+  const s = camO.s, tx = CX - camO.x * s, ty = FY - camO.y * s;
+  camEl.style.transform = `translate(${tx}px,${ty}px) scale(${s})`;
+  for (const a of anchors) a.el.style.transform = `translate(${tx + a.x * s}px,${ty + a.y * s}px)`;
+  cursorEl.style.transform = `translate(${tx + cur.x * s}px,${ty + cur.y * s}px) scale(${cur.k})`;
+  cursorEl.style.opacity = cur.o;
+  for (const k in IMG) IMG[k].style.display = +IMG[k].style.opacity > 0 ? 'block' : 'none';
+}
+
+// ---------- yardımcılar
+const R = (id, k) => P[id].r[k];
+const ctr = (r) => [r[0] + r[2] / 2, r[1] + r[3] / 2];
+const U = (...rs) => { const x = Math.min(...rs.map((r) => r[0])), y = Math.min(...rs.map((r) => r[1])); return [x, y, Math.max(...rs.map((r) => r[0] + r[2])) - x, Math.max(...rs.map((r) => r[1] + r[3])) - y]; };
+const FULL = { x: 720, y: (FY - 50) / 1.2, s: 1.2 };
+function fr(r, o = {}) {
+  const pad = o.pad ?? 40;
+  const s = Math.max(1.2, Math.min(o.max ?? 1.9, 1720 / (r[2] + 2 * pad), 680 / (r[3] + 2 * pad)));
+  return { x: r[0] + r[2] / 2, y: r[1] + r[3] / 2, s: o.s ?? s };
+}
+
+const KF = [];
+const cam = {
+  cut: (t, v) => KF.push({ t, v, d: 0 }),
+  to: (t, v, d = .9, ease = 'power3.inOut') => { KF.push({ t, v, d, ease }); if (d >= .8) ev(t + d * .25, 'move'); },
+};
+function buildCam(DUR) {
+  KF.sort((a, b) => a.t - b.t);
+  KF.forEach((k, i) => {
+    const v = { x: k.v.x, y: k.v.y, s: k.v.s };
+    if (k.d === 0) tl.set(camO, v, k.t); else tl.to(camO, { ...v, duration: k.d, ease: k.ease }, k.t);
+    const e = k.t + k.d, n = KF[i + 1] ? KF[i + 1].t : DUR;
+    if (n < e - 1e-6) console.warn('kamera çakışması', k.t, n);
+    if (n - e > .25) tl.to(camO, { s: v.s * (1 + Math.min(.05, .011 * (n - e))), duration: n - e, ease: 'none' }, e);
+  });
+}
+
+let z = 1, curPage = null;
+function page(key, t, fade = .16) {
+  const n = IMG[key];
+  n.style.zIndex = ++z;
+  if (curPage == null) { n.style.opacity = 1; win.style.height = P[key].h + 'px'; curPage = key; return; }
+  if (fade) tl.fromTo(n, { opacity: 0 }, { opacity: 1, duration: fade, ease: 'none', immediateRender: false }, t); else tl.set(n, { opacity: 1 }, t);
+  tl.set(IMG[curPage], { opacity: 0 }, t + fade + .02);
+  tl.set(win, { height: P[key].h }, t);
+  curPage = key;
+}
+
+let spotOn = false;
+function spot(r, t, o = {}) {
+  const p = o.pad ?? 6, g = { left: r[0] - p, top: r[1] - p, width: r[2] + 2 * p, height: r[3] + 2 * p };
+  if (!spotOn) {
+    tl.set(spotEl, g, t);
+    tl.fromTo(spotEl, { opacity: 0, scale: 1.05 }, { opacity: 1, scale: 1, duration: .3, ease: 'power2.out', immediateRender: false }, t + .002);
+    spotOn = true;
+  } else tl.to(spotEl, { ...g, duration: .4, ease: 'power3.inOut' }, t);
+  ev(t, 'tick');
+}
+function unspot(t) { tl.to(spotEl, { opacity: 0, duration: .25 }, t); spotOn = false; }
+
+function call(text, pt, t, hold, o = {}) {
+  const dx = o.dx ?? 220, dy = o.dy ?? -110;
+  const a = mk('div', 'anc', ov); anchors.push({ el: a, x: pt[0], y: pt[1] });
+  const svg = mk('div', '', a), pill = mk('div', 'pill', a, text);
+  const w = pill.offsetWidth, h = pill.offsetHeight;
+  pill.style.left = dx - w / 2 + 'px'; pill.style.top = dy - h / 2 + 'px';
+  const len = Math.hypot(dx, dy), ux = dx / len, uy = dy / len;
+  const k = Math.min((w / 2 + 8) / Math.abs(ux || 1e-6), (h / 2 + 8) / Math.abs(uy || 1e-6));
+  const sx = dx - ux * k, sy = dy - uy * k, ex = ux * 20, ey = uy * 20;
+  const bend = (o.bend ?? .22) * Math.hypot(sx - ex, sy - ey);
+  const mx = (sx + ex) / 2 - uy * bend, my = (sy + ey) / 2 + ux * bend;
+  const ang = Math.atan2(ey - my, ex - mx), hl = 18;
+  const hp = (d) => `${(ex - hl * Math.cos(ang + d)).toFixed(1)} ${(ey - hl * Math.sin(ang + d)).toFixed(1)}`;
+  svg.innerHTML = `<svg class="arw" width="1" height="1"><path class="ln" d="M${sx.toFixed(1)} ${sy.toFixed(1)}Q${mx.toFixed(1)} ${my.toFixed(1)} ${ex.toFixed(1)} ${ey.toFixed(1)}"/><path class="hd" d="M${hp(-.5)}L${ex.toFixed(1)} ${ey.toFixed(1)}L${hp(.5)}"/></svg>`;
+  const ln = svg.querySelector('.ln'), hd = svg.querySelector('.hd'), L = ln.getTotalLength();
+  ln.style.strokeDasharray = L; ln.style.strokeDashoffset = L;
+  tl.fromTo(pill, { opacity: 0, scale: .7 }, { opacity: 1, scale: 1, duration: .36, ease: 'back.out(2)', immediateRender: false }, t);
+  tl.fromTo(ln, { strokeDashoffset: L }, { strokeDashoffset: 0, duration: .32, ease: 'power2.inOut', immediateRender: false }, t + .12);
+  tl.fromTo(hd, { opacity: 0 }, { opacity: 1, duration: .1, immediateRender: false }, t + .4);
+  tl.to(a, { opacity: 0, duration: .2 }, t + hold);
+  ev(t, 'pop');
+}
+
+let curPos = [720, 400];
+function curShow(t, pos) { tl.set(cur, { x: pos[0], y: pos[1] }, t); tl.to(cur, { o: 1, duration: .25 }, t + .001); curPos = pos; }
+function curHide(t) { tl.to(cur, { o: 0, duration: .2 }, t); }
+function curTo(pt, t, d = .7) { tl.to(cur, { x: pt[0], y: pt[1], duration: d, ease: 'power2.inOut' }, t); curPos = pt; }
+function click(t) {
+  tl.to(cur, { k: .78, duration: .07, ease: 'power2.in' }, t - .07);
+  tl.to(cur, { k: 1, duration: .18, ease: 'back.out(3)' }, t);
+  const a = mk('div', 'anc', ov), r = mk('div', 'rip', a); anchors.push({ el: a, x: curPos[0], y: curPos[1] });
+  tl.fromTo(r, { scale: .2, opacity: .8 }, { scale: 1.8, opacity: 0, duration: .5, ease: 'power2.out', immediateRender: false }, t);
+  ev(t, 'click');
+}
+
+function words(text, parent, t, o = {}) {
+  let acc = false, seg = 0, i = 0;
+  text.split('|').forEach((line) => {
+    const l = mk('div', '', parent);
+    line.trim().split(/\s+/).forEach((w) => {
+      if (w === '/') { seg++; i = 0; return; }
+      if (w[0] === '*') acc = true;
+      const on = acc; if (w.lastIndexOf('*') > 0) acc = false;
+      const s = mk('span', 'w' + (on ? ' ac' : ''), l, w.replace(/\*/g, ''));
+      l.appendChild(document.createTextNode(' '));
+      tl.fromTo(s, { opacity: 0, y: o.y ?? 26, filter: `blur(${o.blur ?? 10}px)` }, { opacity: 1, y: 0, filter: 'blur(0px)', duration: o.dur ?? .42, ease: 'power3.out', immediateRender: false }, t + ((o.seg || [0])[seg] || 0) + i * (o.stg ?? .05));
+      i++;
+    });
+  });
+}
+function cap(text, t, hold, o = {}) {
+  const c = mk('div', 'cap', caps);
+  words(text, mk('div', 'cm', c), t, o);
+  if (o.sub) tl.fromTo(mk('div', 'cs', c, o.sub), { opacity: 0, y: 12 }, { opacity: .8, y: 0, duration: .5, immediateRender: false }, t + .6);
+  tl.to(c, { opacity: 0, y: -14, duration: .22, ease: 'power2.in' }, t + hold - .22);
+}
+function cardText(text, t) { const c = mk('div', 'card', cards); words(text, c, t, { y: 44, blur: 16, dur: .5, stg: .08 }); return c; }
+function card(text, t, dur, key, target) {
+  ev(t - .35, 'whoosh'); ev(t, 'hit'); ev(t + dur - .45, 'whoosh'); ev(t + dur, 'drop');
+  tl.to(black, { opacity: 1, duration: .35, ease: 'power2.in' }, t - .35);
+  const c = cardText(text, t - .05);
+  tl.to(c, { scale: 6, opacity: 0, duration: .5, ease: 'power3.in' }, t + dur - .5);
+  tl.to(black, { opacity: 0, duration: .4, ease: 'power1.out' }, t + dur - .3);
+  page(key, t + .1, 0);
+  cam.cut(t + .1, { ...target, s: target.s * 1.15 });
+  cam.to(t + dur - .45, target, 1.25, 'expo.out');
+}
+
+function logo(id, size) {
+  const g = mk('div', 'lg', stage);
+  g.innerHTML = `<svg width="${size}" height="${size}" viewBox="0 0 100 100"><defs>
+    <linearGradient id="${id}b" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#9a94f7"/><stop offset=".45" stop-color="#4a3fd6"/><stop offset=".75" stop-color="#6f7fee"/><stop offset="1" stop-color="#86a6f8"/></linearGradient>
+    <linearGradient id="${id}l" x1="27" y1="0" x2="82" y2="0" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#ffcf33"/><stop offset="1" stop-color="#ff5a5f"/></linearGradient></defs>
+    <rect class="bg" width="100" height="100" rx="27" fill="url(#${id}b)"/>
+    <rect class="dot" x="23" y="12.5" width="16.5" height="12" rx="5" fill="#ffd43b"/>
+    <rect class="stem" x="23" y="28" width="16.5" height="42" rx="4" fill="#fff"/>
+    <path class="d" fill-rule="evenodd" fill="#fff" d="M46 26Q46 22 50 22H62Q88 22 88 46Q88 70 62 70H50Q46 70 46 66ZM57 32.5V59.5H62Q77 59.5 77 46Q77 32.5 62 32.5Z"/>
+    <polyline class="ln" points="27,85 45,80 58,86 82,71" fill="none" stroke="url(#${id}l)" stroke-width="4.6" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle class="pt" cx="83" cy="70.5" r="4.6" fill="#ff4d67" stroke="#fff" stroke-width="2.2"/></svg><div class="wm">İD Analiz</div>`;
+  return g;
+}
+function logoIn(g, t) {
+  const q = (s) => g.querySelector(s), svg = q('svg'), wm = q('.wm'), shift = (wm.offsetWidth + 48) / 2;
+  const ln = q('.ln'), L = ln.getTotalLength(); ln.style.strokeDasharray = L;
+  const f = (el, a, b, at) => tl.fromTo(el, a, { ...b, immediateRender: false }, t + at);
+  gsap.set(svg, { x: shift }); gsap.set([q('.bg'), q('.dot'), q('.stem'), q('.d'), q('.pt')], { opacity: 0 }); gsap.set(ln, { strokeDashoffset: L, opacity: 0 });
+  tl.set(g, { opacity: 1 }, t);
+  f(q('.bg'), { opacity: 0, scale: .2, rotation: -30, svgOrigin: '50 50' }, { opacity: 1, scale: 1, rotation: 0, duration: .7, ease: 'back.out(1.5)' }, 0);
+  f(q('.stem'), { opacity: 1, scaleY: 0, svgOrigin: '31 70' }, { opacity: 1, scaleY: 1, duration: .35, ease: 'power3.out' }, .35);
+  f(q('.d'), { opacity: 0, x: 14 }, { opacity: 1, x: 0, duration: .4, ease: 'power3.out' }, .45);
+  f(q('.dot'), { opacity: 1, y: -34 }, { opacity: 1, y: 0, duration: .5, ease: 'bounce.out' }, .55);
+  f(ln, { strokeDashoffset: L, opacity: 1 }, { strokeDashoffset: 0, opacity: 1, duration: .6, ease: 'power2.inOut' }, .8);
+  f(q('.pt'), { opacity: 1, scale: 0, svgOrigin: '83 70.5' }, { opacity: 1, scale: 1, duration: .35, ease: 'back.out(3)' }, 1.3);
+  f(svg, { x: shift }, { x: 0, duration: .75, ease: 'power3.inOut' }, 1.35);
+  f(wm, { opacity: 0, x: -50 }, { opacity: 1, x: 0, duration: .7, ease: 'power3.out' }, 1.6);
+  ev(t, 'rise');
+}
+
+// ---------- sahneler
+function build() {
+  let b = 0;
+  const A = (x) => +(b + x).toFixed(3);
+  const snap = () => { b = Math.ceil(b * 2 - 1e-6) / 2; };
+  const N = P.home.r;
+
+  // 0 — logo, ardından Genel bakış
+  page('home', 0);
+  Object.assign(camO, { ...FULL, s: 1.42 });
+  const L1 = logo('a', 250); logoIn(L1, .3);
+  tl.to(L1, { scale: 1.4, opacity: 0, duration: .5, ease: 'power3.in' }, 3.1);
+  tl.to(black, { opacity: 0, duration: .5, ease: 'power1.out' }, 3.25);
+  ev(3.1, 'whoosh'); ev(3.5, 'drop');
+  cam.to(3.2, FULL, 1.3, 'expo.out');
+  tl.to(scrim, { opacity: 1, duration: .5 }, 3.4);
+  b = 3.5;
+  cap('Öğrencilerinizi daha iyi takip|edebilmeniz için tasarlandı.', A(.4), 3.2);
+  cam.to(A(3.7), fr(U(N.t0, N.t3)), .9);
+  cap('Bütün okul. *Tek ekranda.*', A(4.0), 2.6);
+  spot(N.t0, A(4.5)); spot(N.t1, A(5.2)); spot(N.t2, A(5.9)); unspot(A(6.6));
+  cam.to(A(6.8), fr(U(N.iyi, N.dikkat), { pad: 24 }), 1.0);
+  cap('İyi gidenler. Dikkat isteyenler.', A(7.4), 3.3, { sub: 'Nereye bakmanız gerektiğini program söyler.' });
+  spot(N.iyi, A(7.7)); spot(N.dikkat, A(9.1)); unspot(A(10.6));
+  cam.to(A(10.8), FULL, .8);
+  curShow(A(10.8), [760, 520]); curTo(ctr(N.nYuk), A(10.9), .8); click(A(11.8)); page('movers', A(11.85));
+  b += 11.9;
+
+  // 1 — Yükselenler ve düşenler
+  const mv = P.movers.r;
+  cam.to(A(.1), fr(U(mv.ozet, mv.yuk, mv.dus), { pad: 24 }), .7); curHide(A(.3));
+  cap('Kim yükseliyor. Kim düşüyor.', A(.4), 2.4);
+  spot(mv.yuk, A(.7)); spot(mv.dus, A(1.7));
+  cap('En çok yükselen *12-C.* En çok düşen *11-D.*', A(2.9), 2.7);
+  spot(mv.ozet, A(3.0), { pad: 8 }); unspot(A(5.4));
+  b += 5.9; snap();
+
+  // 2 — İncele
+  card('Ders ders|inceleyin.', b, 2.0, 'incele', FULL); b += 2;
+  const ic = P.incele.r;
+  cap('Bir sınıf seçin. Bir ders seçin.', A(.2), 2.4);
+  spot(ic.h1, A(.7), { pad: 10 }); unspot(A(2.5));
+  cam.to(A(2.6), fr(U(ic.t0, ic.t3)), .8);
+  cap('En az yanlış. En çok yanlış. *İlk bakışta.*', A(2.9), 2.5);
+  spot(ic.t0, A(3.3)); spot(ic.t1, A(4.1)); unspot(A(5.3));
+  cam.to(A(5.5), fr([ic.konular[0], ic.konular[1], ic.konular[2], 430]), .9);
+  spot([ic.konular[0] + 12, ic.fonk[1] - 10, ic.konular[2] - 24, ic.fonk[3] + 20], A(6.5));
+  cap('11-B’nin Matematikte en çok|yanlış yaptığı konu: *Fonksiyonlar.*', A(6.4), 3.3);
+  unspot(A(9.6));
+  b += 9.9; snap();
+
+  // 3 — Karşılaştır
+  const c2 = P.cmp2.r, camA = fr([274, 290, 1136, 250]);
+  card('Şimdi|karşılaştırın.', b, 2.0, 'cmp2', camA); b += 2;
+  cap('İki sınıf seçin.', A(.2), 1.9);
+  spot(U(c2.cA, c2.cB), A(.5), { pad: 8 }); spot(U(c2.t0, c2.t1), A(1.3)); unspot(A(2.1));
+  cam.to(A(2.2), { x: 842, y: c2.kart[1] + 300, s: 1.3 }, .9);
+  cap('Kim, kaç derste önde?', A(2.7), 3.0);
+  call('11-B 5 derste, 11-A 4 derste önde', [866, c2.skor[1] - 58], A(3.2), 2.4, { dx: 330, dy: -115 });
+  curShow(A(5.6), [760, 800]); curTo(ctr(c2.sutun), A(5.8), .7); click(A(6.6)); page('cmp2s', A(6.65));
+  cap('Aynı veri. *İstediğiniz grafik.*', A(6.9), 2.2);
+  cam.to(A(9.1), camA, .8); curTo(ctr(c2.ekle), A(9.2), .8); click(A(10.1)); page('cmp3', A(10.15));
+  const c3 = P.cmp3.r;
+  curTo([660, 372], A(10.3), .5);
+  cap('Üçüncü sınıfı ekleyin.', A(10.3), 2.2);
+  call('11-C', ctr(c3.cC), A(10.6), 1.8, { dx: 200, dy: -100 });
+  curHide(A(12.4));
+  cam.to(A(12.6), fr(c3.kart, { pad: 20 }), .9);
+  cap('Ders ders sınıfların|başarısını inceleyin.', A(13.1), 3.0);
+  call('Kim, kaç derste önde', [c3.onde[0] + c3.onde[2] / 2, c3.onde[1]], A(13.7), 2.2, { dx: 330, dy: -110 });
+  curShow(A(16.0), [700, 950]); curTo(ctr(c3.fizik), A(16.1), .7); click(A(16.9)); page('cmp3f', A(16.95));
+  cap('Bir derse tıklayın. *Konularına inin.*', A(17.1), 2.6);
+  call('Fizikte 11-B, 9 konunun 9’unda önde', [520, 748], A(17.7), 1.9, { dx: 400, dy: -120 });
+  curTo(ctr(R('cmp3f', 'elek')), A(19.8), .8); click(A(20.7)); page('cmp3k', A(20.75));
+  const k3 = P.cmp3k.r, pB = k3.pts.slice(10, 20).map(ctr);
+  cam.to(A(20.9), fr(k3.kart, { pad: 20 }), .6); curHide(A(21.1));
+  cap('Elektrik ve Manyetizma:|yıl boyunca doğru oranı.', A(21.2), 2.4);
+  cap('2. denemede *%88.* Son denemede *%19.*', A(23.8), 3.3);
+  call('11-B: %88', pB[1], A(24.1), 2.9, { dx: 180, dy: -70 });
+  call('%19', pB[9], A(25.0), 2.0, { dx: -150, dy: -120 });
+  cap('Önce öğrenilmiş. Sonra düşmüş.|*Konu unutuluyor.*', A(27.3), 3.3);
+  b += 30.8;
+
+  // 4 — Sınıflar → 12-C
+  cam.to(A(0), FULL, .8);
+  curShow(A(0), [700, 500]); curTo(ctr(N.nSin), A(.1), .8); click(A(1.0)); page('classes-0', A(1.05));
+  cap('Sınıflar. *Tek tıkla sıralayın.*', A(1.2), 2.2);
+  curTo(ctr(P['classes-0'].r.th), A(1.4), .8); click(A(2.3)); page('classes-1', A(2.35));
+  const c1 = P['classes-1'].r;
+  cam.to(A(2.5), fr([274, 155, 1136, 260]), .7); curHide(A(3.0));
+  spot(c1.satir, A(3.3), { pad: 2 });
+  cap('En çok yükselen: *12-C.* Bu yıl *+7,8 net.*', A(3.6), 3.2);
+  call('Yılın en büyük artışı', ctr(c1.degisim), A(4.2), 2.4, { dx: 310, dy: -110 });
+  unspot(A(6.8));
+  curShow(A(6.8), [600, 330]); curTo([340, c1.satir[1] + 26], A(6.9), .6); click(A(7.6)); page('c12', A(7.65));
+  const cc = P.c12.r;
+  cam.to(A(7.8), fr([274, 96, 1136, 250]), .6); curHide(A(8.0));
+  cap('Sınıfa tıklayın. *Profili açılsın.*', A(7.9), 1.9);
+  cam.to(A(9.9), fr(cc.one, { pad: 30 }), 1.3, 'power4.inOut');
+  cap('Bu sınıfta öne çıkanlar.', A(11.0), 3.3, { sub: 'Kim yükseliyor, kim geriliyor: isim isim.' });
+  spot(cc.one, A(11.3)); unspot(A(14.2));
+  cam.to(A(14.4), fr([274, 96, 1136, 300]), 1.1, 'power4.inOut');
+  curShow(A(15.0), [760, 300]); curTo(ctr(cc.tabTekrar), A(15.1), .6); click(A(15.8)); page('c12t', A(15.85));
+  const ct = P.c12t.r;
+  curHide(A(16.1)); cam.to(A(16.0), fr(U(ct.tabTekrar, ct.oz, [1137, ct.oz[1], 274, ct.oz[3]])), .7); spot(ct.oz, A(16.7));
+  cap('28 öğrencinin *11’i* aynı konuda|üst üste yanlış yapıyor: *Özel Üçgenler.*', A(16.3), 3.8);
+  unspot(A(20.0));
+  cam.to(A(20.2), fr([274, 750, 1136, 330]), .9);
+  spot(ct.ozel, A(21.1), { pad: 8 });
+  cap('Kim oldukları da yazıyor.', A(21.2), 2.0);
+  cap('*Etüt* tam buraya lazım.', A(23.4), 2.5);
+  unspot(A(25.8));
+  b += 26.1; snap();
+
+  // 5 — Konular
+  card('Her konu.|Tek bakışta.', b, 2.0, 'topics', FULL); b += 2;
+  const tp = P.topics.r;
+  cap('*24* konu iyi. / *51* orta. / *17* zayıf.', A(.3), 3.4, { seg: [0, .9, 1.8] });
+  spot(tp.t0, A(.4)); spot(tp.t1, A(1.3)); spot(tp.t2, A(2.2)); unspot(A(3.6));
+  cam.to(A(3.8), fr(tp.zayif, { pad: 30 }), .9);
+  spot([tp.zayif[0] + 12, tp.olasilik[1] - 10, tp.zayif[2] - 24, tp.olasilik[3] + 20], A(4.7));
+  cap('En zayıflardan biri: *Olasılık.* Doğru oranı *%28.*', A(4.8), 3.0);
+  unspot(A(7.7));
+  cam.to(A(7.9), fr([274, 140, 1136, 400]), .8);
+  curShow(A(8.0), [900, 420]); curTo(ctr(tp.tabAg), A(8.1), .7); click(A(8.9)); page('topicsag', A(8.95));
+  const ag = P.topicsag.r, box = (r) => [r[0] - 10, r[1] - 12, r[2] + 20, r[3] + 24];
+  curHide(A(9.2));
+  cam.to(A(9.1), { x: (ag.perm[0] + ag.ol[0] + ag.ol[2]) / 2, y: (ag.perm[1] + ag.ol[1] + 16) / 2, s: 2.1 }, 1.1);
+  spot(box(ag.perm), A(10.3));
+  cap('Olasılık zayıf. Çünkü *dayandığı konu* zayıf.', A(10.4), 3.4);
+  call('Permütasyon ve Kombinasyon: %25', [ag.perm[0] + 82, ag.perm[1] - 14], A(10.7), 6.0, { dx: -150, dy: -130 });
+  spot(U(box(ag.perm), box(ag.ol)), A(11.9));
+  call('Olasılık: %28', [ag.ol[0] + 82, ag.ol[1] + 30], A(12.1), 4.6, { dx: 170, dy: 110 });
+  cap('Sorun çoğu zaman bir önceki konudadır.', A(14.0), 2.8);
+  unspot(A(16.8));
+  b += 17.0;
+
+  // 5b — Ne yapmalı: en çok net hangi konuda kaçıyor
+  const ny = P.neyap.r, top5 = [274, 207, 1136, ny.r5[1] + ny.r5[3] - 207];
+  cam.to(A(0), fr([274, 140, 1136, 400]), .8);
+  curShow(A(.2), [900, 520]); curTo(ctr(ag.tabNe), A(.3), .7); click(A(1.1)); page('neyap', A(1.15));
+  curHide(A(1.5));
+  cam.to(A(1.4), { x: 800, y: 400, s: 1.7 }, .9);
+  cap('En çok net|*nerede kaçıyor?*', A(1.6), 2.4);
+  spot(ny.r1, A(4.2));
+  cap('Paragrafta Ana Düşünce:|okul *%69*, en iyi sınıf *%83.*', A(4.3), 3.0);
+  spot([ny.g1[0] - 6, ny.g1[1] - 4, ny.g1[2] + 12, ny.g1[3] + 8], A(7.5));
+  cap('En iyi sınıf kadar yapılsa|her denemede *+1,28 net.*', A(7.6), 2.8);
+  spot(top5, A(10.6));
+  cap('İlk beş konu birlikte:|her denemede yaklaşık *+4,9 net.*', A(10.7), 3.4);
+  unspot(A(14.2));
+  b += 14.5;
+
+  // 6 — Öğrenciler → Esra Bulut
+  cam.to(A(0), FULL, .8);
+  curShow(A(0), [800, 500]); curTo(ctr(N.nOgr), A(.1), .8); click(A(1.0)); page('students-0', A(1.05));
+  cap('Öğrenciler. *Değişime göre sıralayın.*', A(1.2), 2.4);
+  const s1 = P['students-1'].r;
+  curTo(ctr(P['students-0'].r.th), A(1.4), .8); click(A(2.3)); click(A(2.65)); page('students-1', A(2.7));
+  cam.to(A(2.9), fr([274, 213, 1136, 260]), .7); curHide(A(3.3));
+  spot(s1.satir, A(3.7), { pad: 2 });
+  cap('Yılın en büyük düşüşü: *Esra Bulut.* *−24 net.*', A(3.9), 3.2);
+  unspot(A(7.1));
+  curShow(A(7.1), [640, 400]); curTo([360, s1.satir[1] + 26], A(7.2), .6); click(A(7.9)); page('esra', A(7.95));
+  const es = P.esra.r, pe = es.pts.slice(0, 10).map(ctr);
+  cam.to(A(8.1), fr([274, 96, 1136, 250]), .6); curHide(A(8.3));
+  cap('Profilini açın.', A(8.2), 1.7);
+  cam.to(A(10.0), fr(es.grafik, { pad: 24 }), .9);
+  cap('İlk iki denemede|sınıf ortalamasının üstünde.', A(10.6), 3.0);
+  call('74,3 net', pe[1], A(11.0), 2.5, { dx: 190, dy: -90 });
+  cap('Sonra düşüş: *74 netten 47 nete.*', A(13.8), 3.0);
+  call('47,3 net', pe[9], A(14.1), 2.6, { dx: -200, dy: -100 });
+  cap('Bir *rehberlik görüşmesi*|için doğru zaman.', A(17.0), 3.0);
+  b += 20.3; snap();
+
+  // 7 — Bugün sınav olsa
+  card('Peki bugün|sınav olsa?', b, 2.0, 'tahmin', FULL); b += 2;
+  const th = P.tahmin.r;
+  cap('Bugüne kadarki bütün denemelerden|*bugünün tahmini.*', A(.2), 3.2);
+  cam.to(A(1.0), fr(U(th.t0, th.t3)), .9);
+  spot(th.t0, A(1.9)); spot(th.t2, A(2.6)); spot(th.t3, A(3.3)); unspot(A(4.0));
+  cam.to(A(4.1), fr([274, 729, 1136, 420]), 1.0);
+  cap('Her öğrenci için *kişiye özel|sınav simülasyonu.*', A(4.6), 3.4);
+  cam.to(A(8.1), fr(th.sinir, { pad: 30 }), .9);
+  spot(th.sinir, A(8.9));
+  cap('*23 öğrenci* sınırda. Kim oldukları belli.', A(9.0), 3.0);
+  unspot(A(12.0));
+  b += 12.3; snap();
+
+  // 8 — kapanış
+  ev(b - .35, 'whoosh'); ev(b, 'outro');
+  tl.to(black, { opacity: 1, duration: .4, ease: 'power2.in' }, b - .4);
+  const end = cardText('Denemelerin söylediği|her şey.', b);
+  tl.to(end, { opacity: 0, scale: 1.06, duration: .4, ease: 'power2.in' }, b + 2.3);
+  const L2 = logo('z', 250); logoIn(L2, b + 2.8);
+  const DUR = b + 8.2;
+  tl.to(L2, { opacity: 0, duration: .7 }, DUR - 1.1);
+  return finish(DUR);
+}
+function finish(DUR) {
+  tl.to($('#glow'), { rotation: 25, scale: 1.2, duration: DUR, ease: 'none' }, 0);
+  buildCam(DUR);
+  tl.set({}, {}, DUR);
+  EVENTS.sort((x, y) => x.t - y.t);
+  return DUR;
+}
+
+// ---------- ikinci film: beş soru, beş cevap (kısa kurgu)
+function build2() {
+  let b = 2;
+  const A = (x) => +(b + x).toFixed(3);
+  page('home', 0); Object.assign(camO, FULL);
+  const intro = cardText('10 deneme.|272 öğrenci.', .25);
+  tl.to(intro, { opacity: 0, scale: 1.06, duration: .3, ease: 'power2.in' }, 1.6);
+  ev(.25, 'tick'); tl.set(scrim, { opacity: 1 }, 1);
+  const qa = (q, key, target, fn) => { card(q, b, 1.5, key, target); b += 1.5; fn(); b += 3.5; };
+  const c1 = P['classes-1'].r, k3 = P.cmp3k.r, pB = k3.pts.slice(10, 20).map(ctr), ct = P.c12t.r, es = P.esra.r, pe = es.pts.slice(0, 10).map(ctr), th = P.tahmin.r;
+  qa('Hangi sınıf|yükseliyor?', 'classes-1', fr([274, 155, 1136, 260]), () => {
+    spot(c1.satir, A(.3), { pad: 2 }); cap('*12-C.* Bu yıl *+7,8 net.*', A(.3), 2.9); unspot(A(3.0));
+  });
+  qa('Hangi konu|unutuluyor?', 'cmp3k', fr(k3.kart, { pad: 20 }), () => {
+    cap('11-B, Elektrik ve Manyetizma:|*%88’den %19’a.*', A(.3), 2.9);
+    call('%88', pB[1], A(.7), 2.3, { dx: 170, dy: -70 }); call('%19', pB[9], A(1.2), 1.8, { dx: -150, dy: -120 });
+  });
+  qa('Kime etüt|lazım?', 'c12t', fr([274, 750, 1136, 330]), () => {
+    spot(ct.ozel, A(.3), { pad: 8 }); cap('12-C’de *11 öğrenci:* Özel Üçgenler.', A(.3), 2.9); unspot(A(3.0));
+  });
+  qa('Kim|düşüşte?', 'esra', fr(es.grafik, { pad: 24 }), () => {
+    cap('*Esra Bulut.* 74 netten 47 nete.', A(.3), 2.9);
+    call('74,3 net', pe[1], A(.7), 2.3, { dx: 190, dy: -90 }); call('47,3 net', pe[9], A(1.2), 1.8, { dx: -200, dy: -100 });
+  });
+  qa('Bugün sınav|olsa?', 'tahmin', fr(U(th.t0, th.t3)), () => {
+    spot(th.t0, A(.4)); spot(th.t3, A(1.7)); cap('Okul ortalaması *≈ 297 puan.*|*23 öğrenci* sınırda.', A(.3), 2.9); unspot(A(3.0));
+  });
+  ev(b - .35, 'whoosh'); ev(b, 'outro');
+  tl.to(black, { opacity: 1, duration: .4, ease: 'power2.in' }, b - .4);
+  const end = cardText('Bütün cevaplar|tek ekranda.', b);
+  tl.to(end, { opacity: 0, scale: 1.06, duration: .4, ease: 'power2.in' }, b + 1.9);
+  const L2 = logo('z', 250); logoIn(L2, b + 2.4);
+  const DUR = b + 7.4;
+  tl.to(L2, { opacity: 0, duration: .7 }, DUR - 1.1);
+  return finish(DUR);
+}
+
+const shown = new Set();
+window.seek = async (t) => {
+  tl.seek(t, true); apply();
+  for (const k in IMG) if (IMG[k].style.display === 'block' && !shown.has(k)) { shown.add(k); try { await IMG[k].decode(); } catch {} }
+};
+window.ready = (async () => {
+  await Promise.all([document.fonts.load('700 60px Heros'), document.fonts.load('400 30px Heros')]);
+  await document.fonts.ready;
+  await Promise.all(Object.values(IMG).map((n) => n.complete ? 0 : new Promise((r) => { n.onload = n.onerror = r; })));
+  window.DUR = (location.search.includes('v=2') ? build2 : build)(); window.EVENTS = EVENTS;
+  tl.progress(1, true).progress(0, true); apply();
+  if (location.search.includes('play')) {
+    const fit = () => { stage.style.transform = `scale(${Math.min(innerWidth / 1920, innerHeight / 1080)})`; }; fit(); addEventListener('resize', fit);
+    const t0 = performance.now() - (+(new URLSearchParams(location.search).get('t')) || 0) * 1000;
+    const loop = () => { const t = (performance.now() - t0) / 1000; tl.seek(Math.min(t, window.DUR), true); apply(); if (t < window.DUR) requestAnimationFrame(loop); }; loop();
+  }
+})();
+</script>
+</body>
+</html>

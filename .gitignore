@@ -1,0 +1,9 @@
+node_modules/
+dist/
+__pycache__/
+
+# Tanıtım filmi için üretilen ya da indirilen ses ve görüntüler: kod değil, depoya girmez.
+video/*.wav
+video/shots/
+video/ornekler/
+video/qa/
