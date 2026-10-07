@@ -8,8 +8,10 @@ import mutlak from './mat-mutlak';
 import oran from './mat-oran';
 import yazim from './tr-yazim';
 import ozkutle from './fiz-ozkutle';
+import bitki from './biy-bitki';
+import noron from './biy-noron';
 
-export type { Konu, Kart, Soru, KSoru, Yanilgi, Tablo, Tur, Acik, Dayanak } from './tip';
+export type { Konu, Kart, Soru, KSoru, Yanilgi, Tablo, Tur, Acik, Dayanak, Gorsel, Ilgi } from './tip';
 export { MUFREDAT, SINAV, type MDers, type Satir, type Sinav } from './mufredat';
 
 /** Uygulamanın adı. Tek yerden değişir. */
@@ -19,7 +21,7 @@ export const APP = 'İD Okul';
 export type Grup = 'tr' | 'sos' | 'mat' | 'fen';
 export interface Ders { id: string; ad: string; grup: Grup; konular: { id: string; ad: string }[] }
 
-export const KONULAR: Record<string, Konu> = Object.fromEntries([uslu, koklu, mutlak, oran, yazim, ozkutle].map((k) => [k.id, k]));
+export const KONULAR: Record<string, Konu> = Object.fromEntries([uslu, koklu, mutlak, oran, yazim, ozkutle, bitki, noron].map((k) => [k.id, k]));
 
 /** "Ad|kimlik" biçimindeki satırlar içeriği hazır konulardır. */
 const d = (id: string, ad: string, grup: Grup, liste: string[]): Ders => ({
@@ -33,7 +35,7 @@ export const DERSLER: Ders[] = [
   d('geo', 'Geometri', 'mat', ['Doğruda ve Üçgende Açılar', 'Özel Üçgenler', 'Üçgende Alan ve Benzerlik', 'Çokgenler ve Dörtgenler', 'Çember ve Daire', 'Katı Cisimler']),
   d('fiz', 'Fizik', 'fen', ['Fizik Bilimine Giriş', 'Madde ve Özkütle|fiz-ozkutle', 'Hareket ve Kuvvet', 'Enerji', 'Isı ve Sıcaklık', 'Basınç ve Kaldırma Kuvveti', 'Elektrostatik', 'Dalgalar', 'Optik']),
   d('kim', 'Kimya', 'fen', ['Kimya Bilimi', 'Atom ve Periyodik Sistem', 'Kimyasal Türler Arası Etkileşimler', 'Maddenin Hâlleri', 'Karışımlar', 'Asitler, Bazlar ve Tuzlar']),
-  d('biy', 'Biyoloji', 'fen', ['Canlıların Ortak Özellikleri', 'Hücre', 'Canlıların Sınıflandırılması', 'Hücre Bölünmeleri', 'Kalıtım', 'Ekosistem Ekolojisi']),
+  d('biy', 'Biyoloji', 'fen', ['Canlıların Ortak Özellikleri', 'Hücre', 'Canlıların Sınıflandırılması', 'Hücre Bölünmeleri', 'Kalıtım', 'Ekosistem Ekolojisi', 'Bitki Hormonları ve Bitki Hareketleri|biy-bitki', 'Nöron ve Sinyal İletimi|biy-noron']),
   d('tar', 'Tarih', 'sos', ['Tarih ve Zaman', 'İlk Çağ Uygarlıkları', 'İlk Türk Devletleri', 'Osmanlı Kuruluş ve Yükselme', 'Millî Mücadele', 'Atatürk İlkeleri ve İnkılaplar']),
   d('cog', 'Coğrafya', 'sos', ['Doğa ve İnsan', 'Harita Bilgisi', 'İklim Bilgisi', 'Yer Şekilleri', 'Nüfus ve Yerleşme', 'Doğal Afetler']),
   d('fel', 'Felsefe', 'sos', ['Felsefeyi Tanıma', 'Bilgi Felsefesi', 'Varlık Felsefesi', 'Ahlak Felsefesi', 'Siyaset Felsefesi']),
@@ -62,5 +64,8 @@ export const MDERSLER: { id: MDers; ad: string; grup: Grup; ikon: string }[] = [
 export const satirlar = (sinif: number, ders: string): Satir[] => MUFREDAT.filter((r) => r.sinif === sinif && r.ders === ders);
 /** Bir öğrenme çıktısını işleyen, içeriği hazır konular. */
 export const cikiKonulari = (kod: string): Konu[] => HAZIR.filter((k) => k.day?.kod === kod);
+/** Resmî dayanağı işlenmemiş ama tablodaki yeri belli olan hazır konular: sınıf ve derse, istenirse içerik çerçevesi başlığına göre. */
+export const yerKonulari = (sinif: number, ders: string, konu?: string): Konu[] =>
+  HAZIR.filter((k) => !k.day && k.yer?.sinif === sinif && k.yer.ders === ders && (konu == null || k.yer.konu === konu));
 /** Konunun dayandığı öğrenme çıktısının tablodaki satırı. */
 export const dayanakSatiri = (konu: Konu): Satir | undefined => MUFREDAT.find((r) => r.kod === konu.day?.kod);

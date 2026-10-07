@@ -88,6 +88,7 @@ const k: Konu = {
   kartlar: [
     {
       id: 'kok', baslik: 'Karekök ve n. dereceden kök',
+      gorsel: { tip: 'kare', alan: 21 },
       giris: 'Yüzey alanı 21 m² olan kare şeklindeki bir halının bir kenarı kaç metredir? Kendisiyle çarpılınca 21 eden sayı bir tam sayı değildir: 4·4 = 16 az gelir, 5·5 = 25 fazla.',
       metin: [
         'Bu sayıya **karekök 21** denir ve √21 diye yazılır. Karekök almak, kare almanın tersidir: √25 = 5, çünkü 5^2 = 25. √21 ise 4 ile 5 arasındadır.',
@@ -106,6 +107,7 @@ const k: Konu = {
     },
     {
       id: 'rasyonel', baslik: 'Kök ile üs arasındaki köprü',
+      gorsel: { tip: 'eslestir', ad: 'Aynı sayıyı bul', cift: [['25^{{1//2}}', '5'], ['8^{{1//3}}', '2'], ['√[3]27', '3'], ['√49', '7']] },
       giris: '9 sayısının yarım kuvveti olur mu? Üslü gösterimin kurallarına güvenirsek olur: 9^{{1//2}}·9^{{1//2}} = 9^1 = 9 etmelidir. Kendisiyle çarpılınca 9 veren sayı ise √9, yani 3\'tür.',
       metin: [
         'Demek ki yarım kuvvet karekök demektir: x^{{1//2}} = √x. Aynı düşünceyle x^{{1//3}} = √[3]x olur; çünkü üç tanesinin çarpımı x^1 eder.',
@@ -130,6 +132,7 @@ const k: Konu = {
     },
     {
       id: 'disari', baslik: 'Kök dışına çıkarmak',
+      gorsel: { tip: 'kok-cikar', sayilar: [72, 48, 108, 1200] },
       giris: 'Ahmet Bey\'in kare şeklindeki arazisi 1200 m² büyüklüğündedir. Arazinin bir kenarı √1200 metredir. Bu sayıyı daha tanıdık bir biçimde yazabilir miyiz?',
       metin: [
         'Çarpımın karekökü, kareköklerin çarpımıdır. Nedeni üs kuralıdır: (x·y)^{{1//2}} = x^{{1//2}}·y^{{1//2}}. Öyleyse kök içindeki sayıyı, biri tam kare olan iki çarpana ayırabilirsen tam kare olan dışarı çıkar.',
@@ -148,6 +151,10 @@ const k: Konu = {
     },
     {
       id: 'topla', baslik: 'Toplama ve çıkarma',
+      gorsel: {
+        tip: 'grupla', ad: 'Hemen toplanır mı?', kutu: ['Hemen toplanır', 'Önce kök dışına çıkar'],
+        oge: [['3√2 + 5√2', 0], ['√12 + √27', 1], ['7√5 − 2√5', 0], ['√8 + √2', 1], ['6√3 − √3', 0], ['√50 − √18', 1]],
+      },
       giris: 'Bir deneyde iki cisim farklı yüksekliklerden bırakılmış; yere düşme süreleri √48 saniye ve √108 saniye olarak hesaplanmıştır. İki süre arasındaki fark kaç saniyedir?',
       metin: [
         'Köklü gösterimler de üslü gösterimler gibi toplanır: yalnızca **kökün derecesi ve kökün içi aynı** olanlar, ortak çarpan parantezine alınarak. 4√5 + 2√5 demek, √5 sayısından 4 + 2 = 6 tane almak demektir.',
@@ -240,6 +247,7 @@ const k: Konu = {
     },
     {
       id: 'yaklasik', baslik: 'Yaklaşık değer ve hata payı',
+      gorsel: { tip: 'kare-ara', n: 3 },
       giris: 'Ahmet Bey, 1200 m² büyüklüğündeki kare arazisinin çevresini çitle çevirecek. Çit 5 metrelik paneller hâlinde satılıyor ve bir panel 1700 TL. Arazinin kenarı 20√3 metre; ama mağazaya "20√3 metre çit" diye gidilmez.',
       metin: [
         '√3 bir irrasyonel sayıdır: ondalık yazımı hiç bitmez ve tekrar etmez. Gerçek yaşamda bu yüzden yaklaşık değeri kullanılır. Yaklaşık değeri bulmanın yolu, sayıyı karesi bilinen iki sayının arasına sıkıştırmaktır.',

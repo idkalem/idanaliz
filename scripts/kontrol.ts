@@ -1,5 +1,5 @@
 // İçerik denetimi: derlemeden önce çalışır. Hatalı içerik (yanlış anahtar, bozuk yazım, tutmayan hesap) derlemeyi durdurur.
-import { DERSLER, KONULAR, HAZIR, MUFREDAT, type Tablo } from '../src/content/index';
+import { DERSLER, KONULAR, HAZIR, MUFREDAT, type Tablo, type Gorsel } from '../src/content/index';
 
 const hata: string[] = [], uyari: string[] = [];
 const dengeli = (s: string) => {
@@ -11,6 +11,25 @@ const dengeli = (s: string) => {
   return p === 0 && b === 0 && k === 0;
 };
 const tabloMetni = (t?: Tablo) => (t ? [t.ad ?? '', ...t.bas, ...t.sat.flat()] : []);
+/** Görselin içerikten gelen yazıları (şeklin kendi yazıları bileşenin içindedir). */
+const gorselMetni = (g?: Gorsel): string[] => (!g ? []
+  : g.tip === 'eslestir' ? [g.ad, ...g.cift.flat()]
+  : g.tip === 'grupla' ? [g.ad, ...g.kutu, ...g.oge.map((x) => x[0])]
+  : g.tip === 'sirala' ? [g.ad, ...g.oge] : []);
+const tekrarsiz = (a: (string | number)[]) => new Set(a).size === a.length;
+/** Görselin verisi bileşenin beklediği biçimde mi? Sorun varsa açıklamasını döndürür. */
+const gorselSorunu = (g: Gorsel): string | null => {
+  switch (g.tip) {
+    case 'eslestir': return g.cift.length < 3 ? 'en az 3 çift olmalı' : !tekrarsiz(g.cift.map((c) => c[0])) || !tekrarsiz(g.cift.map((c) => c[1])) ? 'aynı öge iki kez yazılmış' : null;
+    case 'grupla': return !tekrarsiz(g.oge.map((x) => x[0])) ? 'aynı öge iki kez yazılmış' : [0, 1].some((i) => !g.oge.some((x) => x[1] === i)) ? 'kutulardan biri boş kalıyor' : null;
+    case 'sirala': return g.oge.length < 3 || !tekrarsiz(g.oge) ? 'en az 3 farklı öge olmalı' : null;
+    case 'virgul': return !g.sayilar.length || g.sayilar.some((s) => !/^\d+(,\d+)?$/.test(s) || !/[1-9]/.test(s)) ? 'sayılar "1230000" ya da "0,00025" biçiminde yazılmalı' : null;
+    case 'kok-cikar': return !g.sayilar.length || g.sayilar.some((x) => !Number.isInteger(x) || x < 2) ? 'sayılar 1\'den büyük tam sayı olmalı' : null;
+    case 'kare': return !Number.isInteger(g.alan) || g.alan < 1 || g.alan > 50 ? 'alan 1 ile 50 arasında tam sayı olmalı' : null;
+    case 'kare-ara': return !Number.isInteger(g.n) || g.n < 2 || Number.isInteger(Math.sqrt(g.n)) ? 'n tam kare olmayan bir tam sayı olmalı' : null;
+    default: return null;
+  }
+};
 
 for (const d of DERSLER) for (const k of d.konular) {
   const hz = KONULAR[k.id];
@@ -54,11 +73,19 @@ for (const k of HAZIR) {
     for (const s of k.sorular) { if (!s.tur) hata.push(yer(`soru ${s.id}: türü yazılmamış`)); if (!s.kay) uyari.push(yer(`soru ${s.id}: kaynağı yazılmamış`)); }
     if (!k.sorular.some((s) => s.tur === 'baglam') || !k.sorular.some((s) => s.tur === 'muhakeme')) hata.push(yer('testte bağlam temelli ve muhakeme sorusu bulunmalı'));
   }
-  metinler.push(['giriş', k.giris]);
+  // Resmî dayanağı işlenmemiş ama tablodaki yeri belli olan konu: başlık tabloda bulunmalı, içeriğin nereden geldiği yazılmalı.
+  if (k.yer) {
+    if (!MUFREDAT.some((r) => r.sinif === k.yer!.sinif && r.ders === k.yer!.ders && r.konu === k.yer!.konu)) hata.push(yer(`yer: ${k.yer.sinif}. sınıf ${k.yer.ders} tablosunda "${k.yer.konu}" başlığı yok`));
+    if (!k.day && !k.kaynak) hata.push(yer('dayanağı olmayan konuda içeriğin kaynağı yazılmalı'));
+  }
+  metinler.push(['giriş', `${k.giris} ¦ ${k.kaynak ?? ''}`]);
 
   for (const [id, y] of Object.entries(k.yan)) metinler.push([`yanılgı ${id}`, `${y.ad} ${y.anlat} ${y.ornek ?? ''}`]);
   for (const c of k.kartlar) {
-    metinler.push([`kart ${c.id}`, [c.baslik, c.giris ?? '', ...c.metin, ...tabloMetni(c.tablo), ...(c.kural ?? []), c.ornek?.s ?? '', ...(c.ornek?.a ?? []), c.baska, c.soru.s, ...c.soru.o, c.soru.neden].join(' ¦ ')]);
+    metinler.push([`kart ${c.id}`, [c.baslik, c.giris ?? '', ...Object.values(c.ilgi ?? {}), ...gorselMetni(c.gorsel), ...c.metin, ...tabloMetni(c.tablo), ...(c.kural ?? []), c.ornek?.s ?? '', ...(c.ornek?.a ?? []), c.baska, c.soru.s, ...c.soru.o, c.soru.neden].join(' ¦ ')]);
+    const gs = c.gorsel && gorselSorunu(c.gorsel);
+    if (gs) hata.push(yer(`kart ${c.id} görseli: ${gs}`));
+    if (c.ilgi && !c.giris) hata.push(yer(`kart ${c.id}: ilgi alanı örneği var ama giriş durumu yok`));
     secenek(`kart ${c.id} sorusu`, c.soru.o, c.soru.d, c.soru.y);
     tablo(`kart ${c.id}`, c.tablo);
   }
@@ -74,7 +101,7 @@ for (const k of HAZIR) {
   k.ozet.forEach((o, i) => metinler.push([`özet ${i + 1}`, o]));
   const yerler = [0, 0, 0, 0, 0];
   for (const s of k.sorular) {
-    metinler.push([`soru ${s.id}`, [s.s, ...(s.b ?? []), ...tabloMetni(s.t), ...s.o, ...s.c].join(' ¦ ')]);
+    metinler.push([`soru ${s.id}`, [s.s, ...(s.b ?? []), ...tabloMetni(s.t), ...s.o, ...s.c, s.ip ?? ''].join(' ¦ ')]);
     secenek(`soru ${s.id}`, s.o, s.d, s.y);
     tablo(`soru ${s.id}`, s.t);
     if (s.tur === 'baglam' && !s.b && !s.t) hata.push(yer(`soru ${s.id}: bağlam temelli soruda bağlam ya da tablo yok`));

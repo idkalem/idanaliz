@@ -146,7 +146,7 @@ export default function Rapor() {
               <Link className="btn pri" to={`/tekrar/coz?k=${hata.konu.id}`}><RotateCcw size={15} />Bu konunun yanlışlarını çöz</Link>
               <Link className="btn" to={`/konu/${hata.konu.id}`}>Konuyu aç</Link>
             </div>
-            {hataKart && <><div className="ayar-l">Anlatımdaki ilgili kısım: {hataKart.baslik}</div><KartGovde kart={hataKart} kisisel={st.kisisel} baska={false} /></>}
+            {hataKart && <><div className="ayar-l">Anlatımdaki ilgili kısım: {hataKart.baslik}</div><KartGovde kart={hataKart} baska={false} /></>}
           </div>
         )}
       </Drawer>

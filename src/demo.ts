@@ -2,6 +2,7 @@
 // Tarihler bugüne göre kurulur; dosya ne zaman açılırsa açılsın aynı görüntü çıkar. Kişiler uydurmadır; şifrelerin hepsi 1234.
 import { HAZIR, KONULAR } from './content';
 import { bos, bugun, ARALIK, getKok, setKok, pinOzet, type State, type Cevap, type Tekrar, type Kok, type Odev } from './store';
+import { profilKur } from './kisi';
 
 export const DEMO_PIN = '1234';
 export const DEMO_SINIF = '9-A';
@@ -12,7 +13,7 @@ const hesap = (id: string, ad: string, x: Partial<State>): State => ({ ...bos(id
 
 /** Deniz: üç haftadır çalışan, Köklü Gösterim'de zorlanan öğrenci. Tanıtımın ana hesabı. */
 function deniz(d: number): State {
-  const st = hesap('demo-deniz', 'Deniz', { avatar: { renk: 4, desen: 0, goz: 0, agiz: 0, bas: 5, gozluk: 0, boyun: 0, zemin: 0 }, son: 'mat-mutlak', jeton: 185, tarama: true, yazili: { 'mat-uslu/a1': [0, 1, 2], 'mat-uslu/a3': [0, 1] } });
+  const st = hesap('demo-deniz', 'Deniz', { avatar: { renk: 4, desen: 0, goz: 0, agiz: 0, bas: 5, gozluk: 0, boyun: 0, zemin: 0 }, son: 'mat-mutlak', jeton: 185, tarama: true, yazili: { 'mat-uslu/a1': [0, 1, 2], 'mat-uslu/a3': [0, 1] }, profil: DENIZ_PROFIL });
   st.plan = { ...st.plan, kuruldu: true };
   const cevap: Cevap[] = [], tekrar: Record<string, Tekrar> = {};
 
@@ -63,6 +64,11 @@ function deniz(d: number): State {
   return { ...st, cevap: cevap.sort((a, b) => a.g - b.g), tekrar, xp: Object.values(xp).reduce((a, b) => a + b, 0) };
 }
 
+/** Deniz'in envanter cevabı: yeni konuya örnekle girer, kısa molayla toparlanır, ikinci bir yoldan anlatımı sever; sanat ve tasarıma ilgili.
+ * Öz düzenleme ve akademik dayanıklılık desteklenmesi yararlı olabilecek alanlar olarak çıkar. */
+const DENIZ_PROFIL = profilKur(['DCD', 'CCC', 'CDC', 'BCB', 'BBC', 'EDD', 'DDD', 'DCD'], 'DCBABBAB', 'CBEC', 'DCBE');
+/** Sınıfın geri kalanı için tercih, ilgi ve destek cevapları: her öğrenciye farklı bir birleşim düşer. */
+const TERCIHLER = ['ACBABAAD', 'BDCACDBA', 'CABDACDC', 'DBABDBCB'], ILGILER = ['ECBC', 'BECB', 'CBCE', 'DBDC'], DESTEKLER = ['CDBD', 'DBCE', 'BCDC'];
 const ADLAR = ['Elif', 'Mert', 'Zeynep', 'Arda', 'Defne', 'Kerem', 'Nisa', 'Emir', 'İrem', 'Baran', 'Azra'];
 const rnd = (n: number) => { const x = Math.sin(n * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };
 /** Sınıfın geri kalanı: tohumlu rastgele sayılarla üretilir, her açılışta aynı çıkar. Sınıf Köklü Gösterim'de daha çok yanılır. */
@@ -72,6 +78,7 @@ function ogrenci(i: number, ad: string, d: number): State {
   const st = hesap(`demo-${i + 1}`, ad, {
     avatar: { renk: (i * 3 + 1) % 8, desen: i % 4 === 3 ? 1 : 0, goz: i % 3, agiz: i % 3 === 1 ? 1 : 0, bas: [0, 1, 0, 3, 0, 2, 4, 0][i % 8], gozluk: i % 5 === 2 ? 1 : 0, boyun: i % 6 === 4 ? 1 : 0, zemin: i % 7 === 5 ? 1 : 0 },
     jeton: Math.round(r(2) * 120), tarama: true,
+    profil: profilKur(Array.from({ length: 8 }, (_, b) => [0, 1, 2].map((m) => 'BCCDDE'[Math.floor(r(700 + b * 3 + m) * 6)]).join('')), TERCIHLER[i % 4], ILGILER[i % 4], DESTEKLER[i % 3]),
   });
   HAZIR.forEach((konu, j) => {
     const sans = r(10 + j);

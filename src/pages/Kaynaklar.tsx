@@ -55,7 +55,7 @@ const ilkeler = (bagli: number, yanlis: number): [string, string][] => [
 ];
 
 export default function Kaynaklar() {
-  const dayali = HAZIR.filter((k) => k.day), eski = HAZIR.filter((k) => !k.day);
+  const dayali = HAZIR.filter((k) => k.day), ornek = HAZIR.filter((k) => !k.day && k.kaynak), eski = HAZIR.filter((k) => !k.day && !k.kaynak);
   const celdirici = dayali.flatMap((k) => k.sorular.flatMap((q) => q.y.filter((_, i) => i !== q.d)));
   const ILKELER = ilkeler(celdirici.filter((y) => y != null).length, celdirici.length);
   return (
@@ -119,6 +119,7 @@ export default function Kaynaklar() {
             <ul className="kur-l">
               <li>Anlatımlar ve sorular, bu kaynaklardaki sıra, durum ve soru tiplerine göre yapay zekâ desteğiyle yazıldı. Ders kitabının birebir kopyası değildir; uyarlanan her sorunun altında neye göre yazıldığı yazar.</li>
               <li><b>Henüz bir öğretmen incelemedi.</b> Sınıfta kullanılmadan önce dersin öğretmeninin anlatımı ve soruları gözden geçirmesi gerekir.</li>
+              {ornek.length > 0 && <li>{ornek.map((k) => k.ad).join(', ')} konuları sınıfın örnek ders dosyasından aktarıldı. Resmî tablodaki yerleri gösterilir; ama ders kitabı ve öğretim programıyla karşılaştırmaları henüz yapılmadı.</li>}
               {eski.length > 0 && <li>{eski.map((k) => k.ad).join(', ')} konuları önceki sürümden kalan TYT tekrarı konularıdır; resmî dayanakları henüz işlenmedi.</li>}
             </ul>
           </Card>

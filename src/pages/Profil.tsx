@@ -1,13 +1,12 @@
-// Profil: avatar ve dükkânı, seviye, jeton, rozetler, sınıf sıralaması, kişisel mod, yapay zekâ ve hesap ayarları.
+// Profil: avatar ve dükkânı, seviye, jeton, rozetler, sınıf sıralaması, yapay zekâ ve hesap ayarları. Kişiselleştirme ayrı sayfada (BanaGore).
 import { useEffect, useRef, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import { Lock, Trash2, Coins, Snowflake, LogOut, Sparkles } from 'lucide-react';
-import { useStore, useKok, set, sifirla, cikis, satinAl, donAl, toast, DON_FIYAT, DON_EN_COK, type Kisisel } from '../store';
+import { Link, useSearchParams } from 'react-router-dom';
+import { Lock, Trash2, Coins, Snowflake, LogOut, Sparkles, SlidersHorizontal } from 'lucide-react';
+import { useStore, useKok, set, sifirla, cikis, satinAl, donAl, toast, DON_FIYAT, DON_EN_COK } from '../store';
 import { seviye, rozetler, lig, seri } from '../engine';
-import { Page, Card, Meter, Seg, Switch, Tabs } from '../ui';
+import { Page, Card, Meter, Seg, Tabs } from '../ui';
 import { Avatar, KATALOG, TURLER, AV_RENK, parcaDurum, type Tur } from '../avatar';
 import { RozetIkon } from '../ikon';
-import { sesVar } from '../parca';
 import { AnahtarKutusu } from '../sohbet';
 
 export default function Profil() {
@@ -18,7 +17,6 @@ export default function Profil() {
   const max = Math.max(1, ...sira.map((r) => r.xp));
   const [emin, setEmin] = useState(false);
   const [tur, setTur] = useState<Tur>('renk');
-  const ks = (p: Partial<Kisisel>) => set({ kisisel: { ...st.kisisel, ...p } });
   const ogrenci = st.rol === 'ogrenci';
   const aiRef = useRef<HTMLDivElement>(null);
   useEffect(() => { if (sp.get('ai')) aiRef.current?.scrollIntoView({ block: 'center' }); }, [sp]);
@@ -126,15 +124,8 @@ export default function Profil() {
           )}
 
           {ogrenci && (
-            <Card title="Kişisel mod" hint="İsteyen açar. Anlatım senin seçtiğin biçimde gelir.">
-              <div className="ayar"><div className="grow"><b>Kişisel modu aç</b><small>Kapalıyken herkes aynı anlatımı görür.</small></div><Switch on={st.kisisel.acik} onChange={(v) => ks({ acik: v })} label="Kişisel mod" /></div>
-              {st.kisisel.acik && (
-                <>
-                  <div className="ayar"><div className="grow"><b>Anlatım uzunluğu</b><small>Kısa: yalnız ana fikir, kural ve örnek.</small></div><Seg id="tempo" value={st.kisisel.tempo} onChange={(v) => ks({ tempo: v })} options={[{ id: 'kisa', label: 'Kısa' }, { id: 'tam', label: 'Ayrıntılı' }]} /></div>
-                  <div className="ayar"><div className="grow"><b>Önce hangisi gelsin</b><small>Kimi kuralı görüp örneğe geçer, kimi örnekten kurala gider.</small></div><Seg id="once" value={st.kisisel.once} onChange={(v) => ks({ once: v })} options={[{ id: 'kural', label: 'Kural' }, { id: 'ornek', label: 'Örnek' }]} /></div>
-                  <div className="ayar"><div className="grow"><b>Kartı sesli oku</b><small>{sesVar ? 'Her kart açıldığında tarayıcının sesiyle okunur.' : 'Bu tarayıcıda sesli okuma yok.'}</small></div><Switch on={st.kisisel.dinle} onChange={(v) => ks({ dinle: v })} label="Sesli oku" /></div>
-                </>
-              )}
+            <Card title="Bana göre" hint="Anlatımın sırası ve biçimi senin tercihlerine göre düzenlenir." icon={<SlidersHorizontal size={17} />}>
+              <div className="ayar"><div className="grow"><b>{st.kisisel.acik ? 'Kişiselleştirme açık' : 'Kişiselleştirme kapalı'}</b><small>Tercihlerini, ilgi alanlarını ve neyin neden değiştiğini tek sayfada gör.</small></div><Link className="btn" to="/bana-gore">Aç</Link></div>
             </Card>
           )}
 

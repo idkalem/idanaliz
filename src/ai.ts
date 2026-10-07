@@ -1,7 +1,9 @@
 // Yapay zekâ öğretmen: tarayıcıdan doğrudan Claude API'sine bağlanır. Arada sunucu yoktur.
 // Anahtar bu cihaza bir kez girilir (Profil > Yapay zekâ) ve yalnızca api.anthropic.com adresine gönderilir.
 // Öğrencinin adı ve sınıfı gönderilmez; yalnızca üzerinde çalışılan soru ve konunun metni gider.
-import { getKok } from './store';
+// Kişiselleştirme açıksa öğrencinin çalışma tercihleri de eklenir (bkz. kisi.ts); envanter cevapları ve puanlar gitmez.
+import { getKok, get } from './store';
+import { kisiYonerge } from './kisi';
 import type { Konu, Kart, Soru, Tablo } from './content';
 
 export const MODELLER: { id: string; ad: string; ne: string }[] = [
@@ -20,7 +22,7 @@ Kurallar:
 - Matematik yazımı: üs için 2^3 ya da 2^{n+1}, kök için √12 ya da √(a^2·b), kesir için {a//b}, çarpma için ·, vurgu için **kalın**. LaTeX, tablo ve başlık (#) kullanma. Madde gerekiyorsa satır başına "- " koy.
 - Emin olmadığın bilgiyi uydurma; emin değilsen söyle. Ders dışı isteklerde kibarca derse dön.`;
 /** Sistem yönergesi: temel kurallar, ekrana özel ek ve üzerinde çalışılan içerik. */
-export const sistem = (baglam = '', ek = '') => [TEMEL, ek, baglam && `Öğrencinin şu an baktığı içerik:\n${baglam}`].filter(Boolean).join('\n\n');
+export const sistem = (baglam = '', ek = '') => [TEMEL, kisiYonerge(get()), ek, baglam && `Öğrencinin şu an baktığı içerik:\n${baglam}`].filter(Boolean).join('\n\n');
 
 const HARF = 'ABCDE';
 const tabloYazi = (t: Tablo) => [t.bas.join(' | '), ...t.sat.map((r) => r.join(' | '))].join('\n');

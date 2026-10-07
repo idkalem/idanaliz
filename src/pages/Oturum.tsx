@@ -108,7 +108,7 @@ function Oturum({ maddeler, mod, baslik, geri }: { maddeler: Madde[]; mod: Mod; 
           <SoruMetni soru={m.soru} />
           <Secenekler o={m.soru.o} sec={sec} dogru={m.soru.d} durum={sonuc ? 'goster' : 'sec'} onSec={setSec} />
 
-          {!sonuc && ipucu && <div className="fb info"><span className="f-ic"><Lightbulb size={18} /></span><div><b>İpucu</b><p><M>{m.soru.c[0]}</M></p></div></div>}
+          {!sonuc && ipucu && <div className="fb info"><span className="f-ic"><Lightbulb size={18} /></span><div><b>İpucu</b><p><M>{m.soru.ip ?? m.soru.c[0]}</M></p></div></div>}
           {!sonuc && (
             <div className="sahne-alt">
               {!ipucu && mod !== 'tarama' && <button className="btn lg ghost" onClick={() => { setIpucu(true); setEmin(false); }}><Lightbulb size={17} />İpucu</button>}
@@ -158,7 +158,7 @@ function Oturum({ maddeler, mod, baslik, geri }: { maddeler: Madde[]; mod: Mod; 
         )}
       </motion.div>
       <Drawer open={kartAcik && !!kart} onClose={() => setKartAcik(false)} label={`${m.konu.ad}: anlatım`}>
-        {kart && <div className={k}><h1>{kart.baslik}</h1><KartGovde kart={kart} kisisel={st.kisisel} baska /></div>}
+        {kart && <div className={k}><h1>{kart.baslik}</h1><KartGovde kart={kart} baska /></div>}
       </Drawer>
       <Drawer open={aiAcik} onClose={() => setAiAcik(false)} label="Yapay zekâ öğretmen">
         <Sohbet

@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { HashRouter, Routes, Route, NavLink, Link, useLocation, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'motion/react';
-import { House, BookOpen, RotateCcw, ChartColumn, UserRound, ArrowLeft, ArrowRight, Sun, Moon, Flame, Zap, Coins, CalendarRange, Sparkles, Users, LogOut, Landmark, type LucideIcon } from 'lucide-react';
+import { House, BookOpen, RotateCcw, ChartColumn, UserRound, ArrowLeft, ArrowRight, Sun, Moon, Flame, Zap, Coins, CalendarRange, Sparkles, Users, LogOut, Landmark, SlidersHorizontal, type LucideIcon } from 'lucide-react';
 import { APP } from './content';
 import { useStore, useKok, useUi, setKok, cikis } from './store';
 import { bekleyenler, seri } from './engine';
@@ -21,6 +21,7 @@ import Sinif from './pages/Sinif';
 import Mufredat from './pages/Mufredat';
 import Yazili from './pages/Yazili';
 import Kaynaklar from './pages/Kaynaklar';
+import BanaGore from './pages/BanaGore';
 
 interface Nav { to: string; label: string; icon: LucideIcon; k: string; also?: string[] }
 const DERSLER_NAV: Nav = { to: '/dersler', label: 'Dersler', icon: BookOpen, k: '#6a4fe0', also: ['/ders/', '/konu/', '/mufredat/'] };
@@ -33,6 +34,7 @@ const NAV_OGRENCI: Nav[] = [
   { to: '/tekrar', label: 'Yanlışlarım', icon: RotateCcw, k: '#e5484d' },
   { to: '/ai', label: 'Yapay zekâ', icon: Sparkles, k: '#c2409a' },
   { to: '/rapor', label: 'Rapor', icon: ChartColumn, k: '#1baf7a' },
+  { to: '/bana-gore', label: 'Bana göre', icon: SlidersHorizontal, k: '#d9548f' },
   KAYNAK_NAV,
   PROFIL_NAV,
 ];
@@ -89,6 +91,7 @@ function Shell() {
           <Route path="/konu/:id/yazili" element={<Yazili />} />
           <Route path="/mufredat/:sinif/:ders" element={<Mufredat />} />
           <Route path="/kaynaklar" element={<Kaynaklar />} />
+          <Route path="/bana-gore" element={<BanaGore />} />
           <Route path="/tekrar" element={<Yanlislar />} />
           <Route path="/tekrar/coz" element={<TekrarSayfa key={loc.search} />} />
           <Route path="/tarama" element={<TaramaSayfa />} />

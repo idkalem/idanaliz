@@ -3,7 +3,8 @@ import { useCallback, useEffect, useState } from 'react';
 import { Check, X, Lightbulb, Sparkles, TriangleAlert, Shuffle, MapPin } from 'lucide-react';
 import { M, duz } from './math';
 import type { Kart, Yanilgi, Tablo, Tur } from './content';
-import type { Kisisel } from './store';
+import { DUZ, ILGI_AD, type Uyarlama } from './kisi';
+import { GorselKutu, etkinlikMi } from './gorsel';
 
 export const HARF = ['A', 'B', 'C', 'D', 'E'];
 
@@ -85,29 +86,53 @@ export function Takil({ yan, baslik = 'Büyük olasılıkla burada takıldın' }
   );
 }
 
-/** Anlatım kartının gövdesi. Kişisel mod açıksa kısa anlatım ve "önce örnek" sırası uygulanır. */
-export function KartGovde({ kart, kisisel, baska }: { kart: Kart; kisisel: Kisisel; baska: boolean }) {
-  const kisa = kisisel.acik && kisisel.tempo === 'kisa', ornekOnce = kisisel.acik && kisisel.once === 'ornek';
-  const kural = kart.kural && (
-    <div className="kural">
-      <span className="k-ic"><Sparkles size={18} /></span>
-      <div><div className="k-l">Kural</div><div className="k-s">{kart.kural.map((x, i) => <div key={i}><M>{x}</M></div>)}</div></div>
-    </div>
-  );
-  const ornek = kart.ornek && (
+/** Çözümlü örnek. `tek` verilirse adımlar birer birer açılır. */
+function Ornek({ o, tek }: { o: { s: string; a: string[] }; tek: boolean }) {
+  const [n, setN] = useState(tek ? 1 : o.a.length);
+  return (
     <div className="ornek">
       <div className="o-l">Örnek</div>
-      <div className="o-s"><M>{kart.ornek.s}</M></div>
-      <ol className="adimlar">{kart.ornek.a.map((a, i) => <li key={i}><span><M>{a}</M></span></li>)}</ol>
+      <div className="o-s"><M>{o.s}</M></div>
+      <ol className="adimlar">{o.a.slice(0, n).map((a, i) => <li key={i}><span><M>{a}</M></span></li>)}</ol>
+      {n < o.a.length && <button className="btn pri" style={{ marginTop: 12 }} onClick={() => setN(n + 1)}>Sonraki adım</button>}
     </div>
   );
+}
+
+/** Anlatım kartının gövdesi. `plan` verilirse parçaların sırası ve açılışı öğrencinin tercihine göre düzenlenir (bkz. kisi.ts). */
+export function KartGovde({ kart, plan = DUZ, baska }: { kart: Kart; plan?: Uyarlama; baska: boolean }) {
+  const [kuralAcik, setKuralAcik] = useState(false);
+  const g = plan.giris, ilgiMetni = plan.ilgi ? kart.ilgi?.[plan.ilgi] : undefined;
+  // İlgi alanına göre yazılmış örnek asıl durumun yerine geçmez, yanına eklenir: metin ve örnek asıl duruma gönderme yapar.
+  const durum = kart.giris && (
+    <div className="durum" key="durum">
+      <span className="d-ic"><MapPin size={17} /></span>
+      <div>
+        <div className="d-l">Bir durum</div><M>{kart.giris}</M>
+        {ilgiMetni && plan.ilgi && <div className="d-ilgi"><span className="tag kisi">{ILGI_AD[plan.ilgi]}</span><span><M>{ilgiMetni}</M></span></div>}
+      </div>
+    </div>
+  );
+  const paragraflar = kart.metin.map((p, i) => <p key={i}><M>{p}</M></p>);
+  const metin = g === 'D'
+    ? <details className="katli" key="metin"><summary>Açıklamayı oku</summary><div className="metin">{paragraflar}</div></details>
+    : <div className="metin" key="metin">{paragraflar}</div>;
+  const gorsel = kart.gorsel && !etkinlikMi(kart.gorsel) && <GorselKutu g={kart.gorsel} key="gorsel" />;
+  const etkinlik = kart.gorsel && etkinlikMi(kart.gorsel) && <GorselKutu g={kart.gorsel} key="etkinlik" />;
+  const tablo = kart.tablo && <TabloKutu t={kart.tablo} key="tablo" />;
+  const kural = kart.kural && (g === 'A' && !kuralAcik
+    ? <button className="kural gizli" key="kural" onClick={() => setKuralAcik(true)}><span className="k-ic"><Sparkles size={18} /></span><div><div className="k-l">Kural</div><div className="k-s">Önce kendin söylemeyi dene. Sonra dokun, karşılaştır.</div></div></button>
+    : <div className="kural" key="kural"><span className="k-ic"><Sparkles size={18} /></span><div><div className="k-l">Kural</div><div className="k-s">{kart.kural.map((x, i) => <div key={i}><M>{x}</M></div>)}</div></div></div>);
+  const ornek = kart.ornek && <Ornek o={kart.ornek} tek={g === 'B'} key="ornek" />;
+  const sira = g === 'A' ? [durum, gorsel, tablo, metin, kural, ornek, etkinlik]
+    : g === 'B' ? [durum, metin, kural, gorsel, tablo, ornek, etkinlik]
+    : g === 'D' ? [durum, ornek, gorsel, kural, metin, tablo, etkinlik]
+    : [durum, gorsel, metin, tablo, kural, ornek, etkinlik];
+  const ikinci = !baska && plan.anlam === 'B';
   return (
     <>
-      {kart.giris && <div className="durum"><span className="d-ic"><MapPin size={17} /></span><div><div className="d-l">Bir durum</div><M>{kart.giris}</M></div></div>}
-      <div className="metin">{(kisa ? kart.metin.slice(0, 1) : kart.metin).map((p, i) => <p key={i}><M>{p}</M></p>)}</div>
-      {kart.tablo && <TabloKutu t={kart.tablo} />}
-      {ornekOnce ? <>{ornek}{kural}</> : <>{kural}{ornek}</>}
-      {baska && <div className="baska"><div className="o-l"><Shuffle size={15} />Başka bir yoldan</div><M>{kart.baska}</M></div>}
+      {sira}
+      {(baska || ikinci) && <div className="baska"><div className="o-l"><Shuffle size={15} />{ikinci ? 'Bir de şöyle düşün' : 'Başka bir yoldan'}</div><M>{kart.baska}</M></div>}
     </>
   );
 }

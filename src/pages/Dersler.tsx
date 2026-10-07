@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { ChevronRight, Check, BookOpen, ListChecks, RotateCcw, Clock, Lock, Play, Info, Star, Landmark, PencilLine } from 'lucide-react';
-import { DERSLER, KONULAR, MDERSLER, SINAV, SINIFLAR, dersOf, konuBul, satirlar, cikiKonulari, dayanakSatiri, type Ders, type SinifNo } from '../content';
+import { DERSLER, KONULAR, MDERSLER, SINAV, SINIFLAR, dersOf, konuBul, satirlar, cikiKonulari, yerKonulari, dayanakSatiri, type Ders, type SinifNo } from '../content';
 import { useStore } from '../store';
 import { dersDurum, konuDurum, hatalar, durak, yildiz, onkosulEksik, lv } from '../engine';
 import { M } from '../math';
@@ -32,7 +32,7 @@ export function Dersler() {
           <div className="grid g3">
             {MDERSLER.map((x) => {
               const rows = satirlar(sekme, x.id), sv = SINAV[`${x.id}${sekme}`];
-              const hazir = x.id === 'tde' ? [] : [...new Set(rows.flatMap((r) => cikiKonulari(r.kod)))];
+              const hazir = x.id === 'tde' ? [] : [...new Set([...rows.flatMap((r) => cikiKonulari(r.kod)), ...yerKonulari(sekme, x.id)])];
               const ds = hazir.map((h) => konuDurum(st, h));
               const kart = ds.reduce((a, d) => a + d.kart, 0), kartTop = ds.reduce((a, d) => a + d.kartTop, 0);
               return (
@@ -235,6 +235,17 @@ export function KonuSayfa() {
           {konu.tdk != null && <span className="sm" style={{ color: 'rgba(255,255,255,.75)' }}>{konu.dk} dk anlatım, {konu.tdk} dk test</span>}
         </div>
       </div>
+
+      {!day && konu.kaynak && (
+        <div className="dayanak">
+          <span className="dy-ic"><Info size={20} /></span>
+          <div className="grow">
+            <div className="dy-l">Bu konu nereden geldi?</div>
+            <p className="sm mut">{konu.kaynak}</p>
+            {konu.yer && <div className="row wrap" style={{ marginTop: 12 }}><Link className="btn" to={`/mufredat/${konu.yer.sinif}/${konu.yer.ders}`}>{konu.yer.sinif}. sınıf tablosundaki yeri</Link></div>}
+          </div>
+        </div>
+      )}
 
       {day && satir && (
         <div className="dayanak">

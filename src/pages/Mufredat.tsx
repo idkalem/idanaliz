@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { BookOpen, ChevronRight, Landmark, Clock } from 'lucide-react';
-import { MDERSLER, SINAV, satirlar, cikiKonulari, type Satir } from '../content';
+import { MDERSLER, SINAV, satirlar, cikiKonulari, yerKonulari, type Satir } from '../content';
 import { useStore } from '../store';
 import { konuDurum } from '../engine';
 import { Page, Card, Seg, Empty, PctBar } from '../ui';
@@ -35,7 +35,7 @@ export default function Mufredat() {
     if (!kn || kn.ad !== r.konu) t.konular.push(kn = { ad: r.konu, rows: [] });
     kn.rows.push(r);
   }
-  const hazir = ders === 'tde' ? [] : [...new Set(rows.flatMap((r) => cikiKonulari(r.kod)))];
+  const hazir = ders === 'tde' ? [] : [...new Set([...rows.flatMap((r) => cikiKonulari(r.kod)), ...yerKonulari(n, ders)])];
 
   return (
     <Page
@@ -51,6 +51,21 @@ export default function Mufredat() {
               {t.konular.map((kn, ki) => (
                 <div key={ki} className="muf-konu">
                   <div className="muf-ad">{kn.ad}</div>
+                  {yerKonulari(n, ders, kn.ad).length > 0 && (
+                    <div className="muf-ders yer">
+                      {yerKonulari(n, ders, kn.ad).map((kk) => {
+                        const d = konuDurum(st, kk);
+                        return (
+                          <Link key={kk.id} to={`/konu/${kk.id}`} className="muf-link">
+                            <span className="ml-ic"><BookOpen size={16} /></span>
+                            <span className="grow"><b>{kk.ad}</b><small><Clock size={12} />{kk.dk + (kk.tdk ?? 0)} dakika: etkileşimli anlatım ve test</small></span>
+                            {d.coz > 0 && <span style={{ width: 120 }}><PctBar p={d.oran} /></span>}
+                            <ChevronRight size={17} className="dim" />
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  )}
                   {kn.rows.map((r, ri) => {
                     const v = say(r), ks = ders === 'tde' ? [] : cikiKonulari(r.kod);
                     return (
@@ -76,7 +91,7 @@ export default function Mufredat() {
                         </div>
                         <div className="muf-say">
                           {ulke ? <span className="tag">Ülke geneli</span> : v.length ? <><b className={Math.max(...v) === 0 ? 'yok' : ''}>{soruAraligi(v)}</b><small title="Senaryolara göre soru sayısı">{v.join(' · ')}</small></> : <span className="dim">–</span>}
-                          {!ks.length && <span className="tag">Hazırlanıyor</span>}
+                          {!ks.length && !yerKonulari(n, ders, kn.ad).length && <span className="tag">Hazırlanıyor</span>}
                         </div>
                       </div>
                     );

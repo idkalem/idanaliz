@@ -103,6 +103,13 @@ const k: Konu = {
   kartlar: [
     {
       id: 'tanim', baslik: 'Üslü gösterim ne söyler?',
+      gorsel: { tip: 'eslestir', ad: 'Üslü gösterimi değeriyle eşleştir', cift: [['2^5', '32'], ['5^2', '25'], ['10^3', '1000'], ['3^4', '81'], ['(−3)^3', '−27']] },
+      ilgi: {
+        sanat: 'Bir desen her adımda üç küçük kopyasına ayrılıyor. 4 adım sonra 3·3·3·3 = 3^4 = 81 küçük desen oluşur. Tekrar eden desenleri saymak üslü gösterimin işidir.',
+        bilim: 'Bir bakteri her bölünmede ikiye ayrılır. 10 bölünme sonra tek bakteriden 2^{10} = 1024 bakteri oluşur.',
+        insan: 'Bir haberi duyan herkes onu 3 kişiye iletiyor. 4 adım sonra haberi yeni duyanların sayısı 3·3·3·3 = 3^4 = 81 olur.',
+        girisim: 'Bir ürünü beğenen her müşteri 2 yeni müşteri getiriyor. 6 adım sonra son adımda gelen müşteri sayısı 2^6 = 64 olur.',
+      },
       giris: 'İnsan beyninde yaklaşık 86 000 000 000 nöron vardır. Bir nötronun kütlesi ise yaklaşık 0,000 000 000 000 000 000 000 001 675 gramdır. Bu sayıları her seferinde böyle yazmak hem yorucu hem hataya açık.',
       metin: [
         'Aynı sayının art arda çarpımını kısa yazmanın yolu üslü gösterimdir. a^n yazımında **a** tabandır, **n** üstür: üs, tabanın kaç kez çarpılacağını söyler. 2^5 demek 2·2·2·2·2 demektir; 2·5 demek değildir.',
@@ -127,6 +134,13 @@ const k: Konu = {
     },
     {
       id: 'ters', baslik: 'Sıfır ve negatif üs',
+      gorsel: { tip: 'us-katla' },
+      ilgi: {
+        sanat: 'Bir çizimi her seferinde yarı ölçeğe küçültüyorsun. Genişliği önce {1//2}, sonra {1//4}, sonra {1//8} olur: 2^{−1}, 2^{−2}, 2^{−3}.',
+        bilim: 'Bir metreyi önce 10, sonra yine 10, sonra yine 10 eş parçaya böl: 10^{−1} m bir desimetre, 10^{−2} m bir santimetre, 10^{−3} m bir milimetredir.',
+        insan: 'Bir miras her kuşakta iki kardeş arasında eşit paylaşılıyor. 3 kuşak sonra bir kişiye ilk mirasın {1//8} kadarı, yani 2^{−3} katı düşer.',
+        girisim: 'Bir ürünün fiyatı her indirimde yarıya iniyor. 3 indirim sonra ilk fiyatın {1//8} kadarı, yani 2^{−3} katı kalır.',
+      },
       giris: 'Bir hidrojen atomunun çekirdeğinin çapı yaklaşık 0,00000000000000175 metredir. Bu kadar küçük sayıları da üsle yazabilmek için üssün sıfır ve negatif olduğu durumları anlamak gerekir.',
       metin: [
         'Tabloya bak: 2\'nin kuvvetlerinde üs bir azaldığında sonuç 2\'ye bölünüyor. Aynı örüntüyü sürdürürsen üs 0 olduğunda 1\'e, üs negatif olduğunda kesirlere ulaşırsın.',
@@ -145,6 +159,10 @@ const k: Konu = {
     },
     {
       id: 'topla', baslik: 'Toplama ve çıkarma',
+      gorsel: {
+        tip: 'grupla', ad: 'Hemen toplanır mı?', kutu: ['Hemen toplanır', 'Hemen toplanmaz'],
+        oge: [['3·5^{10} + 5^{10}', 0], ['2^3 + 2^4', 1], ['5·7^{12} − 2·7^{12}', 0], ['2^5 + 3^5', 1], ['0,4·5^7 + 2,1·5^7', 0], ['5,8·10^7 + 7,5·10^8', 1]],
+      },
       giris: 'Bir laboratuvarda incelenen 1 litre kanda 5·10^9 alyuvar, 6·10^6 akyuvar ve 0,2·10^9 trombosit sayılmıştır. Alyuvarlarla trombositlerin toplamı kaçtır?',
       metin: [
         'Tabloya bak: 3·5^{10} + 5^{10} demek, 5^{10} sayısından önce 3 tane, sonra 1 tane daha almak demektir. Toplam 4 tane 5^{10} eder. Üslü gösterim burada bir elma gibi sayılır: 3 elma ile 1 elma, 4 elma.',
@@ -168,6 +186,13 @@ const k: Konu = {
     },
     {
       id: 'carp', baslik: 'Çarpma ve bölme: tabanlar aynıysa',
+      gorsel: { tip: 'us-birlestir' },
+      ilgi: {
+        sanat: 'Bir görselin genişliği 2^{10} piksel, yüksekliği 2^9 piksel olsun. Toplam piksel sayısı 2^{10}·2^9 = 2^{19} eder.',
+        bilim: 'Saniyede 10^9 işlem yapan bir bilgisayar 10^3 saniyede 10^9·10^3 = 10^{12} işlem yapar.',
+        insan: 'Bir kütüphanede 10^4 kitap, her kitapta yaklaşık 10^5 harf varsa kütüphanedeki harf sayısı 10^4·10^5 = 10^9 eder.',
+        girisim: 'Günde 10^3 sipariş alan bir dükkân her siparişten 10^2 TL kazanıyorsa günlük geliri 10^3·10^2 = 10^5 TL olur.',
+      },
       giris: 'Ankara\'daki barajlarda 2001 yılının ocak ayında yaklaşık 4·10^6 metreküp, 2024 yılının ocak ayında yaklaşık 1,6·10^8 metreküp su ölçülmüştür. 1 metreküp 1000 litredir. 2001\'deki su kaç litredir?',
       metin: [
         'Tablodaki çarpımları açık yaz ve çarpanları say: 2^3·2^4 çarpımında önce 3 tane, sonra 4 tane 2 var; toplam 7 tane. Çarpmada çarpanlar yan yana eklenir, bu yüzden **üsler toplanır**.',
@@ -214,6 +239,7 @@ const k: Konu = {
     },
     {
       id: 'ussu', baslik: 'Üssün üssü',
+      gorsel: { tip: 'eslestir', ad: 'Aynı sayıyı bul', cift: [['4^5', '2^{10}'], ['27^2', '3^6'], ['9^4', '3^8'], ['25^3', '5^6']] },
       giris: 'Veri depolama birimleri arasında şu ilişki vardır: 1 GB = 2^{10} MB ve 1 GB = (2^{10})^3 bayt. 1 GB kaç bayttır? Cevabı 2\'nin tek bir kuvveti olarak yazmak için üssün üssünü almayı bilmek gerekir.',
       metin: [
         'Tabloya bak: (3^2)^3 demek, 3^2 sayısını 3 kez yan yana yazıp çarpmak demektir. Tabanlar aynı olduğu için üsler toplanır: 2 + 2 + 2. Aynı sayıyı 3 kez toplamak onu 3 ile çarpmaktır; bu yüzden **üsler çarpılır**.',
@@ -237,6 +263,13 @@ const k: Konu = {
     },
     {
       id: 'bilimsel', baslik: 'Bilimsel gösterim',
+      gorsel: { tip: 'virgul', sayilar: ['1090000', '1230000', '1054000', '0,00025'] },
+      ilgi: {
+        sanat: 'Genişliği 4000, yüksekliği 3000 piksel olan bir fotoğrafta 12 000 000 piksel vardır: 1,2·10^7. Buna 12 megapiksel denir.',
+        bilim: 'Işık boşlukta saniyede yaklaşık 300 000 000 metre yol alır: 3·10^8 m.',
+        insan: 'Dünya nüfusu yaklaşık 8 000 000 000 kişidir: 8·10^9.',
+        girisim: 'Yıllık cirosu 45 000 000 TL olan bir şirketin cirosu bilimsel gösterimle 4,5·10^7 TL yazılır.',
+      },
       giris: 'Adana, Kahramanmaraş ve Tokat\'ın Çanakkale\'ye kara yolu uzaklıkları sırasıyla yaklaşık 1,09·10^6 m, 123·10^4 m ve 10,54·10^5 m olarak verilmiş. Hangisi en uzak? Üsler de katsayılar da farklı yazıldığı için ilk bakışta söylemek zor.',
       metin: [
         'Karışıklığı önlemek için ortak bir biçim kullanılır: sayı, **1 ile 10 arasında bir katsayı** ile 10\'un bir kuvvetinin çarpımı olarak yazılır. Buna bilimsel gösterim denir. Katsayı 1 olabilir ama 10 olamaz.',

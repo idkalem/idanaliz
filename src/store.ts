@@ -16,7 +16,9 @@ export interface Cevap {
 }
 /** Yanlış defterindeki bir soru. kutu 0–3: tekrar aralığı basamağı; 4: öğrenildi. */
 export interface Tekrar { k: string; q: string; kutu: number; son: number; y?: string; n: number; sec: number }
-export interface Kisisel { acik: boolean; tempo: 'kisa' | 'tam'; once: 'kural' | 'ornek'; dinle: boolean }
+/** Kişiselleştirme anahtarı ve sesli okuma. Anlatımın nasıl düzenleneceği `profil` alanından çıkarılır (bkz. kisi.ts). */
+export interface Kisisel { acik: boolean; dinle: boolean }
+export type Geri = 'evet' | 'kismen' | 'hayir';
 /** Çalışma programının ayarları. gunler: pazartesiden pazara hangi günler çalışılacak. */
 export interface Plan { kuruldu: boolean; sinav: number; gunler: boolean[]; dk: number }
 export interface State {
@@ -45,6 +47,12 @@ export interface State {
   tarama: boolean;
   /** yazılı provası: `${konu}/${soru}` → puanlama anahtarında işaretlenen adımlar */
   yazili?: Record<string, number[]>;
+  /** okulun envanterindeki 40 sorunun cevabı (A–E, bilinmeyen '-'); bkz. kisi.ts */
+  profil?: string;
+  /** anlatım kartlarına yazılan notlar: `${konu}/${kart}/${tür}` → metin */
+  notlar?: Record<string, string>;
+  /** konu → "bu anlatım biçimi işine yaradı mı?" cevabı */
+  geri?: Record<string, Geri>;
 }
 /** Öğretmenin verdiği ödev: bir konunun kavrama testi, son günüyle. */
 export interface Odev { id: string; konu: string; verildi: number; son: number }
@@ -75,7 +83,7 @@ export const bos = (id = ''): State => ({
   id, rol: 'ogrenci', ad: '', sinif: '', pin: '',
   avatar: { renk: 0, desen: 0, goz: 0, agiz: 0, bas: 0, gozluk: 0, boyun: 0, zemin: 0 }, jeton: 0, sahip: [],
   kart: {}, cevap: [], tekrar: {}, xp: 0, gun: {}, hedef: 50,
-  kisisel: { acik: false, tempo: 'tam', once: 'kural', dinle: false }, son: '',
+  kisisel: { acik: true, dinle: false }, son: '',
   plan: { kuruldu: false, sinav: varsayilanSinav(), gunler: [true, true, true, true, true, true, false], dk: 40 },
   sandik: 0, don: 0, donGun: [], tarama: false,
 });

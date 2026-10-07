@@ -290,8 +290,9 @@ details.yan p.orn { color: var(--ink); font-weight: 550; }
 /* ---------- Çalışma sahnesi: anlatım ve test ---------- */
 .sahne { max-width: 820px; margin: 0 auto; padding: 6px 24px 120px; }
 .sahne-ust { display: flex; align-items: center; gap: 14px; margin-bottom: 20px; }
-.sahne-ust .ad { font-weight: 650; font-size: 14px; color: var(--ink2); white-space: nowrap; }
-.ilerle { flex: 1; height: 10px; border-radius: 5px; background: var(--sunken); overflow: hidden; }
+.sahne-ust .ad { min-width: 0; overflow: hidden; text-overflow: ellipsis; font-weight: 650; font-size: 14px; color: var(--ink2); white-space: nowrap; }
+.sahne-ust .ad.num, .sahne-ust .hedef-cip { flex: none; }
+.ilerle { flex: 1; min-width: 28px; height: 10px; border-radius: 5px; background: var(--sunken); overflow: hidden; }
 .ilerle i { display: block; height: 100%; border-radius: 5px; background: var(--k, var(--accent)); transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
 .ders-kart { background: var(--surface); border-radius: 22px; padding: 30px 34px 30px; box-shadow: var(--card-shadow); }
 .ders-kart h1 { font-size: 30px; line-height: 1.1; font-weight: 700; font-stretch: 88%; letter-spacing: -0.028em; margin-bottom: 16px; }

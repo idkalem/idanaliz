@@ -20,6 +20,34 @@ Tanıtım ve deneme için adres çubuğu kısayolları:
 | `?demo=giris` | Örnek sınıfı yükler, giriş ekranında kalır |
 | `?tema=koyu` ya da `?tema=acik` | Temayı seçer |
 | `?anim=0` | Hareketleri kapatır (ekran görüntüsü için) |
+| `?duz=1` (anlatım ekranında) | Kişiselleştirmeyi o an için kapatır, herkesin gördüğü anlatımı gösterir |
+
+## v0.4: dokunarak öğrenilen anlatım ve "Bana göre"
+
+Anlatım artık yalnızca yazı değil. 26 kartın içinde dokunulan bir şekil ya da küçük bir etkinlik var.
+
+- **Şekiller (Dene).** Öğrenci bir şeyi değiştirir, sonucu şeklin üstünde görür; şeklin altındaki satır ne olduğunu söyler.
+  Biyolojide: ışığın yerini değiştir (oksin gölgeye geçer, gövde eğilir), ucu kes (yan dallar büyür), koleoptil deneyi, nöronun parçaları
+  ve uyartıyı gönderme, iyonların dört aşaması, miyelinli ve miyelinsiz akson yarışı, eşik değer sürgüsü, sinaps ve ters yön denemesi,
+  hareket adını önek ve son ekten kurma. Matematikte: 2'nin kuvvetleri (negatif üs dâhil), aynı tabanı çarp ve böl, virgülü kaydırarak
+  bilimsel gösterim, alanı bilinen karenin kenarı, çiftleri kökten çıkar, karesi 3 eden sayıyı ara.
+- **Etkinlikler.** Eşleştir, iki kutuya ayır, sıraya diz. İçerik karttan gelir; her konuda kullanılabilir.
+- **İki biyoloji konusu.** "Bitki Hormonları ve Bitki Hareketleri" ile "Nöron ve Sinyal İletimi" (11. sınıf). Notlar ve ilk beş soru
+  sınıfın örnek ders dosyasından aktarıldı; şekiller, beşinci seçenekler ve öteki sorular aynı notlara göre hazırlandı. İpuçları
+  testte "İpucu" düğmesiyle açılır. Bu iki konu 11. sınıf biyoloji tablosunda ilgili başlığın altında görünür.
+- **Bana göre.** Okulun akademik gelişim envanterindeki başlıklara dayanan kişiselleştirme: yeni konuya nasıl girmek istediği,
+  dikkatini neyin topladığı, bilgiyi neyin anlamlı kıldığı ve ilgi alanları. Bunlara göre kartın sırası değişir (önce örnek, önce şekil,
+  önce soru...), anlatım küçük hedeflere bölünür, ortada mola önerilir, ikinci bir anlatım yolu açık gelir, kartı açan durumun yanına
+  ilgi alanından bir örnek eklenir. Anlatım ekranının üstündeki "Sana göre" şeridi neyin değiştiğini söyler; tek dokunuşla herkesle aynı
+  anlatıma geçilir.
+
+Kişiselleştirmenin sınırları (okulun yönergesine göre): öğrenciye etiket konmaz, puan gösterilmez, öğrenciler karşılaştırılmaz,
+kırk soru uygulamada yeniden sorulmaz. Profil değiştirilebilen bir varsayımdır; yalnızca o cihazda, öğrencinin hesabında durur.
+Kurallar `src/kisi.ts` içindedir: hangi tercih anlatımda neyi değiştirir, tek tek yazar.
+
+**Durum.** Tanıtım için hazırlandı. İki biyoloji konusu ders kitabı ve öğretim programıyla karşılaştırılmadı; konu sayfasında bu açıkça
+yazar. Mutlak Değer, Oran ve Orantı, Yazım Kuralları ile Madde ve Özkütle konularında henüz şekil yok. İlgi alanına göre örnek yalnızca
+Üslü Gösterim'in dört kartında yazılı.
 
 ## v0.3: Maarif Modeli'ne göre içerik
 
@@ -109,6 +137,8 @@ Bu yüzden göndermeden önce `npm run build` çalıştır.
 
 - `src/content/` konu anlatımları ve sorular (her konu bir dosya); `mufredat.ts` MEB tablolarından üretilen öğrenme çıktıları
 - `src/pages/` ekranlar
+- `src/gorsel/` anlatım kartlarındaki şekiller ve etkinlikler (`mat.tsx`, `biy.tsx`, `etkinlik.tsx`); stilleri `src/gorsel.css`
+- `src/kisi.ts` kişiselleştirme kuralları; `src/pages/BanaGore.tsx` öğrencinin gördüğü ekran
 - `src/store.ts` hesaplar ve kayıt; `src/engine.ts` hesaplamalar (program, rapor, sınıf)
 - `src/avatar.tsx` avatar ve parçaları; `src/ai.ts`, `src/sohbet.tsx` yapay zekâ öğretmen
 - `scripts/kontrol.ts` içerik denetimi: cevap anahtarı, çözüm adımları, yanılgı etiketleri, tablolar, resmî dayanak

@@ -1,6 +1,7 @@
 import { createRoot } from 'react-dom/client';
 import { MotionGlobalConfig } from 'motion/react';
 import './styles.css';
+import './gorsel.css';
 import App from './App';
 import { getKok, setKok } from './store';
 import { demoYukle } from './demo';
