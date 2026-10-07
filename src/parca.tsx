@@ -1,11 +1,42 @@
-// Çalışma parçaları: seçenekler, adım adım çözüm, yanılgı kutusu, anlatım kartının gövdesi, sesli okuma.
+// Çalışma parçaları: seçenekler, soru metni (bağlam, tablo, kök), adım adım çözüm, yanılgı kutusu, anlatım kartının gövdesi, sesli okuma.
 import { useCallback, useEffect, useState } from 'react';
-import { Check, X, Lightbulb, Sparkles, TriangleAlert, Shuffle } from 'lucide-react';
+import { Check, X, Lightbulb, Sparkles, TriangleAlert, Shuffle, MapPin } from 'lucide-react';
 import { M, duz } from './math';
-import type { Kart, Yanilgi } from './content';
+import type { Kart, Yanilgi, Tablo, Tur } from './content';
 import type { Kisisel } from './store';
 
 export const HARF = ['A', 'B', 'C', 'D', 'E'];
+
+/** Soru türünün adı. */
+export const TUR: Record<Tur, string> = { islem: 'İşlem', baglam: 'Bağlam temelli', muhakeme: 'Muhakeme' };
+
+/** Veri tablosu: bağlam temelli sorularda ve anlatımdaki keşif tablolarında. */
+export function TabloKutu({ t }: { t: Tablo }) {
+  return (
+    <div className="tablo-kap">
+      {t.ad && <div className="t-ad">{t.ad}</div>}
+      <table className="tablo">
+        <thead><tr>{t.bas.map((h, i) => <th key={i}><M>{h}</M></th>)}</tr></thead>
+        <tbody>{t.sat.map((r, i) => <tr key={i}>{r.map((c, j) => <td key={j}><M>{c}</M></td>)}</tr>)}</tbody>
+      </table>
+    </div>
+  );
+}
+
+/** Sorunun okunacak kısmı: önce bağlam ve tablosu, sonra soru kökü. */
+export function SoruMetni({ soru }: { soru: { s: string; b?: string[]; t?: Tablo } }) {
+  return (
+    <>
+      {(soru.b || soru.t) && (
+        <div className="baglam">
+          {soru.b?.map((p, i) => <p key={i}><M>{p}</M></p>)}
+          {soru.t && <TabloKutu t={soru.t} />}
+        </div>
+      )}
+      <div className="soru-kok"><M>{soru.s}</M></div>
+    </>
+  );
+}
 
 /** Seçenekler. durum: 'sec' seçim yapılıyor; 'goster' doğru cevap açıklandı; 'dene' yanlış seçenek işaretlendi ama yeniden denenebilir. */
 export function Secenekler({ o, sec, dogru, durum, onSec }: { o: string[]; sec: number | null; dogru: number; durum: 'sec' | 'goster' | 'dene'; onSec?: (i: number) => void }) {
@@ -72,7 +103,9 @@ export function KartGovde({ kart, kisisel, baska }: { kart: Kart; kisisel: Kisis
   );
   return (
     <>
+      {kart.giris && <div className="durum"><span className="d-ic"><MapPin size={17} /></span><div><div className="d-l">Bir durum</div><M>{kart.giris}</M></div></div>}
       <div className="metin">{(kisa ? kart.metin.slice(0, 1) : kart.metin).map((p, i) => <p key={i}><M>{p}</M></p>)}</div>
+      {kart.tablo && <TabloKutu t={kart.tablo} />}
       {ornekOnce ? <>{ornek}{kural}</> : <>{kural}{ornek}</>}
       {baska && <div className="baska"><div className="o-l"><Shuffle size={15} />Başka bir yoldan</div><M>{kart.baska}</M></div>}
     </>
@@ -82,7 +115,7 @@ export { Lightbulb };
 
 /* ---------- Sesli okuma (tarayıcının kendi sesi) ---------- */
 export const sesVar = typeof window !== 'undefined' && 'speechSynthesis' in window;
-export const kartMetni = (c: Kart) => duz([c.baslik, ...c.metin, ...(c.kural ? ['Kural', ...c.kural] : []), ...(c.ornek ? ['Örnek', c.ornek.s, ...c.ornek.a] : [])].join('. '));
+export const kartMetni = (c: Kart) => duz([c.baslik, ...(c.giris ? [c.giris] : []), ...c.metin, ...(c.kural ? ['Kural', ...c.kural] : []), ...(c.ornek ? ['Örnek', c.ornek.s, ...c.ornek.a] : [])].join('. '));
 export function useSes() {
   const [okuyor, setOkuyor] = useState(false);
   const sus = useCallback(() => { if (sesVar) speechSynthesis.cancel(); setOkuyor(false); }, []);

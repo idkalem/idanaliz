@@ -20,7 +20,7 @@ export default function Giris() {
     <div className="giris">
       <header className="giris-ust">
         <Logo />
-        <div className="grow"><b>{APP}</b><small>TYT çalışma portalı</small></div>
+        <div className="grow"><b>{APP}</b><small>Ders çalışma portalı</small></div>
         <button className="btn ghost icon" aria-label={kok.tema === 'dark' ? 'Açık tema' : 'Koyu tema'} onClick={() => setKok({ tema: kok.tema === 'dark' ? 'light' : 'dark' })}>{kok.tema === 'dark' ? <Sun size={18} /> : <Moon size={18} />}</button>
       </header>
 
@@ -106,7 +106,7 @@ function Yeni({ geri, siniflar: ss }: { geri?: () => void; siniflar: string[] })
       </div>
       <div className="row" style={{ justifyContent: 'center', margin: '18px 0 4px' }}><Seg id="rol" value={rol} onChange={setRol} options={[{ id: 'ogrenci', label: 'Öğrenciyim' }, { id: 'ogretmen', label: 'Öğretmenim' }]} /></div>
       <label><span>Adın</span><input className="input" value={ad} onChange={(e) => setAd(e.target.value)} maxLength={24} autoFocus placeholder="Örneğin Deniz" /></label>
-      {rol === 'ogrenci' && <label><span>Sınıfın</span><input className="input" value={sinif} onChange={(e) => setSinif(e.target.value)} maxLength={8} placeholder="Örneğin 11-A" list="siniflar" /><datalist id="siniflar">{ss.map((s) => <option key={s} value={s} />)}</datalist></label>}
+      {rol === 'ogrenci' && <label><span>Sınıfın</span><input className="input" value={sinif} onChange={(e) => setSinif(e.target.value)} maxLength={8} placeholder="Örneğin 9-A" list="siniflar" /><datalist id="siniflar">{ss.map((s) => <option key={s} value={s} />)}</datalist></label>}
       <label><span>Dört haneli şifre</span><input className="input" type="password" inputMode="numeric" autoComplete="off" value={pin} onChange={(e) => setPin(e.target.value.replace(/\D/g, '').slice(0, 4))} placeholder="••••" /></label>
       <div className="row" style={{ marginTop: 18 }}>
         {geri && <button type="button" className="btn lg" onClick={geri}>Vazgeç</button>}

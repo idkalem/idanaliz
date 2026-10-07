@@ -1,22 +1,62 @@
-// Dersler → ders → konu. Ders sayfası konuları bir yol haritası olarak gösterir; konu sayfası üç adımı: anlatım, kavrama testi, yanlışlar.
+// Dersler → ders → konu. Sınıf sekmeleri Maarif Modeli tablolarına, "TYT tekrar" sekmesi yol haritasına açılır.
+// Ders sayfası konuları bir yol haritası olarak gösterir; konu sayfası adımları: anlatım, kavrama testi, yanlışlar, yazılı provası.
 import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { ChevronRight, Check, BookOpen, ListChecks, RotateCcw, Clock, Lock, Play, Info, Star } from 'lucide-react';
-import { DERSLER, KONULAR, dersOf, konuBul, type Ders } from '../content';
+import { ChevronRight, Check, BookOpen, ListChecks, RotateCcw, Clock, Lock, Play, Info, Star, Landmark, PencilLine } from 'lucide-react';
+import { DERSLER, KONULAR, MDERSLER, SINAV, SINIFLAR, dersOf, konuBul, satirlar, cikiKonulari, dayanakSatiri, type Ders, type SinifNo } from '../content';
 import { useStore } from '../store';
 import { dersDurum, konuDurum, hatalar, durak, yildiz, onkosulEksik, lv } from '../engine';
 import { M } from '../math';
 import { Page, Card, Seg, Empty, PctBar, LevelTag, Meter, Yildizlar, kOf, useTitle } from '../ui';
 import { DersIkon } from '../ikon';
 import { Avatar } from '../avatar';
+import { TUR } from '../parca';
+import { soruAraligi } from './Mufredat';
+
+type Sekme = SinifNo | 'tyt';
+/** Seçilen sekme sayfalar arasında gezerken hatırlanır. */
+let sonSekme: Sekme | null = null;
 
 export function Dersler() {
   const st = useStore();
-  const [sinav, setSinav] = useState<'tyt' | 'ayt'>('tyt');
+  const [sekme, setSekme] = useState<Sekme>(() => sonSekme ?? SINIFLAR.find((n) => parseInt(st.sinif, 10) === n) ?? 9);
+  const sec = (v: Sekme) => { sonSekme = v; setSekme(v); };
   return (
-    <Page title="Dersler" sub="Dersini seç, yol haritasını aç. Her konuda önce anlatım, sonra kavrama testi var." actions={<Seg id="sinav" value={sinav} onChange={setSinav} options={[{ id: 'tyt', label: 'TYT' }, { id: 'ayt', label: 'AYT' }]} />}>
-      {sinav === 'ayt' ? (
-        <Card><Empty title="AYT konuları hazırlanıyor">Şimdilik TYT konularıyla çalışabilirsin.</Empty></Card>
+    <Page
+      title="Dersler"
+      sub={sekme === 'tyt' ? 'TYT tekrarı: dersini seç, yol haritasını aç. Her konuda önce anlatım, sonra kavrama testi var.' : `${sekme}. sınıf, Türkiye Yüzyılı Maarif Modeli. Dersini seç; öğrenme çıktılarını ve yazılıda kaç soru geleceğini gör.`}
+      actions={<Seg id="sinav" value={sekme} onChange={sec} options={[...SINIFLAR.map((n) => ({ id: n as Sekme, label: `${n}. sınıf` })), { id: 'tyt' as Sekme, label: 'TYT tekrar' }]} />}
+    >
+      {sekme !== 'tyt' ? (
+        <>
+          <div className="grid g3">
+            {MDERSLER.map((x) => {
+              const rows = satirlar(sekme, x.id), sv = SINAV[`${x.id}${sekme}`];
+              const hazir = x.id === 'tde' ? [] : [...new Set(rows.flatMap((r) => cikiKonulari(r.kod)))];
+              const ds = hazir.map((h) => konuDurum(st, h));
+              const kart = ds.reduce((a, d) => a + d.kart, 0), kartTop = ds.reduce((a, d) => a + d.kartTop, 0);
+              return (
+                <Link key={x.id} to={`/mufredat/${sekme}/${x.id}`} className={`ders k-${x.grup}`}>
+                  <div className="row" style={{ gap: 14 }}>
+                    <span className="ders-ic"><DersIkon id={x.ikon} /></span>
+                    <div className="grow"><h3>{x.ad}</h3><small>{new Set(rows.map((r) => r.tema)).size} tema, {rows.length} öğrenme çıktısı</small></div>
+                    <ChevronRight size={18} className="dim" />
+                  </div>
+                  <div className="row wrap" style={{ gap: 6 }}>
+                    {hazir.length ? <span className="tag good"><Check size={13} strokeWidth={3} />{hazir.length} konu hazır</span> : <span className="tag">Konular hazırlanıyor</span>}
+                    {sv && <span className="tag">1. yazılı: {sv.ulke1 ? 'ülke geneli' : `${sv.s1} senaryo`}</span>}
+                  </div>
+                  {hazir.length > 0 && <div><Meter v={kart} max={kartTop} k={`k-${x.grup}`} /><div className="xs dim" style={{ marginTop: 6 }}>{hazir.map((h) => h.ad).join(', ')}</div></div>}
+                </Link>
+              );
+            })}
+          </div>
+          <Link to="/kaynaklar" className="kay-serit">
+            <span className="ks-ic"><Landmark size={19} /></span>
+            <span className="grow"><b>Konular neye göre yazılıyor?</b><small>Öğretim programı, MEB ders kitabı, konu soru dağılım tablosu ve soru yazım kılavuzu. Hangi kaynağın nerede kullanıldığını gör.</small></span>
+            <ChevronRight size={18} />
+          </Link>
+        </>
       ) : (
         <div className="grid g3">
           {DERSLER.map((x) => {
@@ -175,6 +215,11 @@ export function KonuSayfa() {
   const ders = dersOf(konu.id), k = kOf(ders), d = konuDurum(st, konu);
   const hs = hatalar(st).filter((h) => h.konu.id === konu.id);
   const anlatimBitti = d.kart === d.kartTop, eksik = onkosulEksik(st, konu);
+  const day = konu.day, satir = dayanakSatiri(konu), sv = satir && SINAV[`${satir.ders}${satir.sinif}`];
+  const turSay = (['islem', 'baglam', 'muhakeme'] as const).map((t) => [konu.sorular.filter((s) => s.tur === t).length, TUR[t].toLocaleLowerCase('tr')] as const).filter(([n]) => n > 0);
+  const yzTam = (konu.acik ?? []).reduce((a, x) => a + x.adim.reduce((b, y) => b + y.p, 0), 0);
+  const yzBakilan = (konu.acik ?? []).filter((x) => st.yazili?.[`${konu.id}/${x.id}`]).length;
+  const yzPuan = (konu.acik ?? []).reduce((a, x) => a + (st.yazili?.[`${konu.id}/${x.id}`] ?? []).reduce((b, i) => b + (x.adim[i]?.p ?? 0), 0), 0);
   return (
     <div className={`page ${k}`}>
       <div className="konu-ust">
@@ -186,14 +231,39 @@ export function KonuSayfa() {
         </div>
         <div className="col" style={{ gap: 8, alignItems: 'flex-end' }}>
           {d.coz === d.top && <Yildizlar n={yildiz(d)} size={22} />}
-          <span className="row" style={{ gap: 7, color: 'rgba(255,255,255,.85)', fontWeight: 600 }}><Clock size={16} />Yaklaşık {konu.dk} dakika</span>
+          <span className="row" style={{ gap: 7, color: 'rgba(255,255,255,.85)', fontWeight: 600 }}><Clock size={16} />Yaklaşık {konu.dk + (konu.tdk ?? 0)} dakika</span>
+          {konu.tdk != null && <span className="sm" style={{ color: 'rgba(255,255,255,.75)' }}>{konu.dk} dk anlatım, {konu.tdk} dk test</span>}
         </div>
       </div>
+
+      {day && satir && (
+        <div className="dayanak">
+          <span className="dy-ic"><Landmark size={20} /></span>
+          <div className="grow">
+            <div className="dy-l">Bu konu neye göre yazıldı?</div>
+            <p className="dy-c"><span className="tag kod">{day.kod}</span>{satir.cikti}</p>
+            <p className="sm mut">{day.kapsam}</p>
+            <dl className="dy-list">
+              <div><dt>Okul yazılısında</dt><dd>1. yazılı: {sv?.ulke1 ? 'ülke geneli sınav' : `${soruAraligi(satir.y1)} (${sv?.s1} senaryoya göre)`}. 2. yazılı: {sv?.ulke2 ? 'ülke geneli sınav, tablosu sınavdan önce yayımlanacak' : soruAraligi(satir.y2)}.</dd></div>
+              <div><dt>Ders kitabı</dt><dd>{day.kitap}</dd></div>
+              <div><dt>Anlatım sırası</dt><dd>{day.sira.join(' → ')}</dd></div>
+            </dl>
+            <details className="yan">
+              <summary><ChevronRight size={16} /><span className="grow">Öğretim programındaki süreç bileşenleri ({day.surec.length})</span></summary>
+              <ol className="dy-surec">{day.surec.map((x, i) => <li key={i}>{x}</li>)}</ol>
+            </details>
+            <div className="row wrap" style={{ marginTop: 12 }}>
+              <Link className="btn" to={`/mufredat/${satir.sinif}/${satir.ders}`}>{satir.sinif}. sınıf tablosunu aç</Link>
+              <Link className="btn ghost" to="/kaynaklar">Bütün kaynaklar</Link>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="grid g3" style={{ marginBottom: 16 }}>
         <div className={`adim ${anlatimBitti ? 'bitti' : ''}`}>
           <div className="row"><span className="a-no">{anlatimBitti ? <Check size={16} strokeWidth={3} /> : 1}</span><h3>Konu anlatımı</h3></div>
-          <p>{d.kartTop} kısa kart. Her kartta kural, çözümlü örnek ve bir kontrol sorusu var.</p>
+          <p>{day ? `${d.kartTop} kart. Her kart bir durumla başlar, örüntüyü tabloda gösterir, kuralı verir, örnek çözer ve bir kontrol sorusu sorar.` : `${d.kartTop} kısa kart. Her kartta kural, çözümlü örnek ve bir kontrol sorusu var.`}</p>
           <Meter v={d.kart} max={d.kartTop} k={k} />
           <div className="row">
             <Link className="btn lg pri" to={`/konu/${konu.id}/anlatim${anlatimBitti ? '?kart=0' : ''}`}><BookOpen size={17} />{d.kart === 0 ? 'Anlatıma başla' : anlatimBitti ? 'Baştan oku' : 'Devam et'}</Link>
@@ -202,7 +272,7 @@ export function KonuSayfa() {
         </div>
         <div className={`adim ${d.coz === d.top ? 'bitti' : ''}`}>
           <div className="row"><span className="a-no">{d.coz === d.top ? <Check size={16} strokeWidth={3} /> : 2}</span><h3>Kavrama testi</h3></div>
-          <p>{d.coz ? `Çözdüğün ${d.coz} sorunun ${d.dogru} tanesi doğru.` : `${d.top} soru. Yanlış yaptığında nerede takıldığını gösterir, çözümü adım adım açar.`}</p>
+          <p>{d.coz ? `Çözdüğün ${d.coz} sorunun ${d.dogru} tanesi doğru.` : `${d.top} soru${turSay.length ? `: ${turSay.map(([n, ad]) => `${n} ${ad}`).join(', ')}` : ''}. Yanlış yaptığında nerede takıldığını gösterir, çözümü adım adım açar.`}</p>
           {d.coz ? <PctBar p={d.oran} /> : <Meter v={0} max={1} />}
           <div className="row">
             <Link className={`btn lg ${anlatimBitti ? 'pri' : ''}`} to={`/konu/${konu.id}/test`}><ListChecks size={17} />{d.coz ? 'Yeniden çöz' : 'Testi çöz'}</Link>
@@ -219,6 +289,15 @@ export function KonuSayfa() {
           </div>
         </div>
       </div>
+
+      {konu.acik && konu.acik.length > 0 && (
+        <Link to={`/konu/${konu.id}/yazili`} className="kay-serit" style={{ marginTop: 0, marginBottom: 16 }}>
+          <span className="ks-ic"><PencilLine size={19} /></span>
+          <span className="grow"><b>Yazılı provası</b><small>{konu.acik.length} açık uçlu soru. Kâğıda çöz, puanlama anahtarını aç, adım adım kendini puanla.</small></span>
+          {yzBakilan > 0 ? <span className="tag info">{yzPuan} / {yzTam} puan</span> : <span className="tag">{yzTam} puan</span>}
+          <ChevronRight size={18} />
+        </Link>
+      )}
 
       <div className="grid g-main">
         <div className="stack">

@@ -3,14 +3,14 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { motion } from 'motion/react';
-import { X, Check, ChevronRight, Lightbulb, BookOpen, RotateCcw, Zap, Sparkles, Coins } from 'lucide-react';
+import { X, Check, ChevronRight, Lightbulb, BookOpen, RotateCcw, Zap, Sparkles, Coins, Landmark } from 'lucide-react';
 import { konuBul, type Konu, type Soru } from '../content';
 import { useStore, cevapla, toast, get, set, bugun, OGRENILDI } from '../store';
 import { defter, bekleyenler, neZaman, hizli, tarama, konuDurum, yildiz } from '../engine';
 import { M } from '../math';
 import { kOf, useTitle, Card, Empty, Drawer, Tile, Yildizlar } from '../ui';
 import { Avatar } from '../avatar';
-import { Secenekler, Cozum, Takil, KartGovde, HARF } from '../parca';
+import { Secenekler, Cozum, Takil, KartGovde, SoruMetni, HARF, TUR } from '../parca';
 import { Sohbet } from '../sohbet';
 import { sistem, soruBaglami } from '../ai';
 
@@ -103,8 +103,9 @@ function Oturum({ maddeler, mod, baslik, geri }: { maddeler: Madde[]; mod: Mod; 
             {m.yeniden && <span className="tag mid"><RotateCcw size={12} />Az önce yanlış yaptığın soru</span>}
             <span className="zor" title={['Kolay', 'Orta', 'Zor'][m.soru.z - 1]}>{[1, 2, 3].map((z) => <i key={z} className={z <= m.soru.z ? 'on' : ''} />)}</span>
             <span className="xs dim">{['Kolay', 'Orta', 'Zor'][m.soru.z - 1]}</span>
+            {m.soru.tur && <span className={`tag tur-${m.soru.tur}`}>{TUR[m.soru.tur]}</span>}
           </div>
-          <div className="soru-kok"><M>{m.soru.s}</M></div>
+          <SoruMetni soru={m.soru} />
           <Secenekler o={m.soru.o} sec={sec} dogru={m.soru.d} durum={sonuc ? 'goster' : 'sec'} onSec={setSec} />
 
           {!sonuc && ipucu && <div className="fb info"><span className="f-ic"><Lightbulb size={18} /></span><div><b>İpucu</b><p><M>{m.soru.c[0]}</M></p></div></div>}
@@ -146,6 +147,7 @@ function Oturum({ maddeler, mod, baslik, geri }: { maddeler: Madde[]; mod: Mod; 
 
         {sonuc && !sonuc.ok && yan && <Takil yan={yan} />}
         {sonuc && <Cozum key={`c${i}`} adimlar={m.soru.c} tek={!sonuc.ok} baslik={sonuc.ok ? 'Çözüm' : 'Adım adım çözüm'} />}
+        {sonuc && m.soru.kay && <p className="kaynak"><Landmark size={14} /><span><b>Bu soru neye göre yazıldı?</b> {m.soru.kay}</span></p>}
         {sonuc && (
           <div className="sahne-alt">
             {kart && !sonuc.ok && <button className="btn lg" onClick={() => setKartAcik(true)}><BookOpen size={17} />Anlatımdan tekrar oku</button>}

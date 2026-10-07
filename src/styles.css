@@ -654,3 +654,111 @@ select.input { appearance: auto; padding-right: 6px; }
   .page { padding: 0; max-width: none; }
   .card, .tile { break-inside: avoid; }
 }
+
+/* ---------- Maarif Modeli: bağlam, tablo, resmî dayanak, öğrenme çıktıları, yazılı provası, kaynaklar ---------- */
+.m-rd { font-size: 0.68em; font-weight: 650; vertical-align: 0.62em; margin-right: -0.3em; }
+.m-c { display: inline-block; margin: 0 0.16em; font-weight: 800; transform: scale(1.5); }
+/* kartı açan durum */
+.durum { display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 13px; align-items: start; margin-bottom: 18px; padding: 14px 18px; border-radius: 16px; background: var(--accent-soft); font-size: 16.5px; line-height: 1.55; }
+.durum .d-ic { width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; color: var(--on-accent); background: var(--accent); }
+.durum .d-l { font-size: 13.5px; font-weight: 680; color: var(--accent-ink); margin-bottom: 2px; }
+/* sorunun bağlamı */
+.baglam { margin: 10px 0 16px; padding: 14px 18px; border-radius: 14px; background: var(--sunken); border-left: 4px solid var(--k, var(--accent)); }
+.baglam p { font-size: 16.5px; line-height: 1.55; }
+.baglam p + p { margin-top: 8px; }
+.baglam .tablo-kap { margin-top: 12px; }
+.baglam > .tablo-kap:first-child { margin-top: 0; }
+.tablo-kap { margin-top: 18px; overflow-x: auto; border-radius: 13px; box-shadow: inset 0 0 0 1px var(--line2); background: var(--surface); }
+.tablo-kap .t-ad { padding: 10px 16px 0; font-size: 13.5px; font-weight: 680; color: color-mix(in srgb, var(--k, var(--accent)) 80%, var(--ink)); }
+.tablo { width: 100%; border-collapse: collapse; font-size: 16.5px; }
+.tablo th { text-align: left; font-size: 13px; font-weight: 680; color: var(--ink2); padding: 9px 16px; border-bottom: 1.5px solid var(--line2); }
+.tablo td { padding: 10px 16px; border-top: 1px solid var(--line); line-height: 1.5; vertical-align: middle; }
+.tablo tbody tr:first-child td { border-top: 0; }
+.tablo td:last-child { font-weight: 640; }
+.tag.tur-baglam, .tag.tur-muhakeme { background: var(--accent-soft); color: var(--accent-ink); }
+.tag.kod { font-variant-numeric: tabular-nums; flex: none; background: color-mix(in srgb, var(--k, var(--accent)) 14%, var(--surface)); color: color-mix(in srgb, var(--k, var(--accent)) 80%, var(--ink)); }
+.kaynak { display: flex; gap: 8px; align-items: flex-start; margin-top: 12px; font-size: 13.5px; line-height: 1.45; color: var(--ink2); }
+.kaynak svg { flex: none; margin-top: 2px; color: var(--ink3); }
+.kaynak b { color: var(--ink); font-weight: 650; }
+/* konu sayfası: resmî dayanak */
+.dayanak { display: grid; grid-template-columns: 42px minmax(0, 1fr); gap: 16px; padding: 20px 22px; margin-bottom: 16px; border-radius: var(--r); background: var(--surface); box-shadow: var(--card-shadow); }
+.dy-ic { width: 42px; height: 42px; border-radius: 13px; display: grid; place-items: center; color: #fff; background: var(--k, var(--accent)); }
+.dy-l { font-size: 13.5px; font-weight: 680; color: color-mix(in srgb, var(--k, var(--accent)) 80%, var(--ink)); }
+.dy-c { font-size: 18px; font-weight: 650; line-height: 1.4; margin: 4px 0 6px; letter-spacing: -0.012em; }
+.dy-c .tag { margin-right: 9px; vertical-align: 2px; }
+.dy-list { margin: 12px 0 0; display: grid; gap: 7px; }
+.dy-list > div { display: grid; grid-template-columns: 130px minmax(0, 1fr); gap: 12px; font-size: 14.5px; line-height: 1.45; }
+.dy-list dt { color: var(--ink2); font-weight: 620; }
+.dy-list dd { margin: 0; }
+.dayanak details.yan { border-top: 1px solid var(--line); margin-top: 12px; padding: 11px 0 0; }
+.dy-surec { margin: 8px 0 0 26px; padding-left: 18px; display: grid; gap: 5px; font-size: 14.5px; color: var(--ink2); line-height: 1.45; }
+/* şerit bağlantı */
+.kay-serit { display: flex; align-items: center; gap: 14px; margin-top: 16px; padding: 16px 20px; border-radius: var(--r); background: var(--surface); box-shadow: var(--card-shadow); transition: transform 0.12s; }
+.kay-serit:hover { transform: translateY(-1px); }
+.kay-serit .ks-ic { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; color: #fff; background: var(--k, var(--accent)); flex: none; }
+.kay-serit b { display: block; font-weight: 690; font-size: 16.5px; }
+.kay-serit small { display: block; color: var(--ink2); font-size: 14px; line-height: 1.4; margin-top: 1px; }
+.kay-serit > svg { color: var(--ink3); flex: none; }
+/* öğrenme çıktıları tablosu */
+.muf-konu { border-top: 1px solid var(--line); padding: 14px 22px 8px; }
+.card-head + .muf-konu { border-top: 0; padding-top: 2px; }
+.muf-ad { font-weight: 680; font-size: 15.5px; line-height: 1.35; margin-bottom: 4px; }
+.muf-satir { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 12px; align-items: start; padding: 10px 0; border-top: 1px dashed var(--line2); }
+.muf-ad + .muf-satir { border-top: 0; }
+.muf-satir p { font-size: 14.5px; line-height: 1.45; color: var(--ink2); }
+.muf-say { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; min-width: 100px; text-align: right; }
+.muf-say b { font-weight: 700; font-size: 14.5px; white-space: nowrap; }
+.muf-say b.yok { color: var(--ink3); font-weight: 600; }
+.muf-say small { font-size: 12px; color: var(--ink3); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.muf-ders { display: grid; gap: 8px; margin-top: 10px; }
+.muf-link { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 13px; background: color-mix(in srgb, var(--k, var(--accent)) 9%, var(--surface)); transition: background 0.12s; }
+.muf-link:hover { background: color-mix(in srgb, var(--k, var(--accent)) 17%, var(--surface)); }
+.muf-link .ml-ic { width: 32px; height: 32px; border-radius: 10px; display: grid; place-items: center; color: #fff; background: var(--k, var(--accent)); flex: none; }
+.muf-link b { display: block; font-weight: 680; font-size: 15.5px; line-height: 1.25; color: var(--ink); }
+.muf-link small { display: flex; align-items: center; gap: 5px; color: var(--ink2); font-size: 13px; margin-top: 1px; }
+/* kaynaklar */
+.kay-akis { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; margin-bottom: 18px; }
+.kay-akis .ka { position: relative; display: flex; align-items: center; gap: 11px; padding: 14px 16px; border-radius: 16px; background: var(--surface); box-shadow: var(--card-shadow); }
+.kay-akis .ka .no { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; font-weight: 720; font-size: 14px; background: var(--accent-soft); color: var(--accent-ink); flex: none; }
+.kay-akis .ka b { display: block; font-weight: 680; font-size: 15px; line-height: 1.25; }
+.kay-akis .ka small { display: block; color: var(--ink2); font-size: 13px; line-height: 1.35; margin-top: 2px; }
+.kay-akis .ka .ok { position: absolute; right: -16px; top: 50%; transform: translateY(-50%); z-index: 1; color: var(--ink3); background: var(--bg); border-radius: 50%; }
+.kay-akis .ka.son { background: var(--brand-grad); color: #fff; }
+.kay-akis .ka.son small { color: rgba(255, 255, 255, 0.82); }
+.kay-akis .ka.son .no { background: rgba(255, 255, 255, 0.22); color: #fff; }
+.kay-ne { font-size: 15.5px; line-height: 1.55; }
+.ilke { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; padding: 13px 22px; border-top: 1px solid var(--line); font-size: 14.5px; line-height: 1.5; }
+.ilke > span:first-child { font-weight: 600; }
+.ilke > span:last-child { color: var(--ink2); }
+.ilke.bas { border-top: 0; padding: 2px 22px 8px; font-size: 13px; }
+.ilke.bas > span { color: var(--ink2); font-weight: 680; }
+.kur-l { margin: 0; padding: 0; list-style: none; display: grid; gap: 10px; font-size: 14.5px; line-height: 1.5; color: var(--ink2); }
+.kur-l li { padding-left: 16px; position: relative; }
+.kur-l li::before { content: ''; position: absolute; left: 0; top: 8px; width: 7px; height: 7px; border-radius: 50%; background: var(--k, var(--accent)); }
+.kur-l b { color: var(--ink); font-weight: 660; }
+/* yazılı provası */
+.yz-alt { margin: 4px 0 0; padding: 0; list-style: none; display: grid; gap: 10px; }
+.yz-alt li { display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: 12px; align-items: start; font-size: 17px; line-height: 1.5; font-weight: 560; }
+.yz-alt .h { width: 28px; height: 28px; border-radius: 9px; display: grid; place-items: center; font-weight: 720; font-size: 14px; background: color-mix(in srgb, var(--k, var(--accent)) 14%, var(--surface)); color: color-mix(in srgb, var(--k, var(--accent)) 80%, var(--ink)); }
+.yz-anahtar { margin-top: 18px; padding: 16px 18px; border-radius: 16px; background: var(--sunken); }
+.yz-anahtar .o-l { font-size: 13.5px; font-weight: 680; color: var(--ink2); margin-bottom: 10px; }
+.yz-adim { display: grid; grid-template-columns: 24px minmax(0, 1fr) auto; gap: 12px; align-items: center; width: 100%; text-align: left; padding: 10px 12px; border-radius: 12px; background: var(--surface); font-size: 16px; line-height: 1.45; margin-top: 6px; box-shadow: inset 0 0 0 1.5px var(--line); }
+.yz-adim .kutu { width: 24px; height: 24px; border-radius: 8px; display: grid; place-items: center; box-shadow: inset 0 0 0 1.5px var(--line2); color: #fff; }
+.yz-adim .p { font-size: 13px; font-weight: 680; color: var(--ink2); white-space: nowrap; }
+.yz-adim.on { background: var(--good-soft); box-shadow: inset 0 0 0 1.5px var(--good); }
+.yz-adim.on .kutu { background: var(--good); box-shadow: none; }
+.yz-adim.on .p { color: var(--good-ink); }
+.yz-puan { font-size: 15px; color: var(--ink2); font-weight: 600; white-space: nowrap; }
+.yz-puan b { font-size: 24px; font-weight: 720; color: var(--ink); }
+@media (max-width: 1100px) {
+  .kay-akis { grid-template-columns: minmax(0, 1fr); }
+  .kay-akis .ka .ok { display: none; }
+}
+@media (max-width: 700px) {
+  .ilke { grid-template-columns: minmax(0, 1fr); gap: 4px; }
+  .ilke.bas { display: none; }
+  .muf-satir { grid-template-columns: minmax(0, 1fr); }
+  .muf-say { flex-direction: row; flex-wrap: wrap; align-items: center; text-align: left; }
+  .dayanak { grid-template-columns: minmax(0, 1fr); }
+  .dy-list > div { grid-template-columns: minmax(0, 1fr); gap: 0; }
+}

@@ -4,15 +4,15 @@ import { HAZIR, KONULAR } from './content';
 import { bos, bugun, ARALIK, getKok, setKok, pinOzet, type State, type Cevap, type Tekrar, type Kok, type Odev } from './store';
 
 export const DEMO_PIN = '1234';
-export const DEMO_SINIF = '11-A';
+export const DEMO_SINIF = '9-A';
 const demoMu = (id: string) => id.startsWith('demo-');
 export const demoVar = (kok: Kok) => Object.keys(kok.hesap).some(demoMu);
 
 const hesap = (id: string, ad: string, x: Partial<State>): State => ({ ...bos(id), ad, sinif: DEMO_SINIF, pin: pinOzet(id, DEMO_PIN), ...x });
 
-/** Deniz: üç haftadır çalışan, Köklü Sayılar'da zorlanan öğrenci. Tanıtımın ana hesabı. */
+/** Deniz: üç haftadır çalışan, Köklü Gösterim'de zorlanan öğrenci. Tanıtımın ana hesabı. */
 function deniz(d: number): State {
-  const st = hesap('demo-deniz', 'Deniz', { avatar: { renk: 4, desen: 0, goz: 0, agiz: 0, bas: 5, gozluk: 0, boyun: 0, zemin: 0 }, son: 'mat-mutlak', jeton: 185, tarama: true });
+  const st = hesap('demo-deniz', 'Deniz', { avatar: { renk: 4, desen: 0, goz: 0, agiz: 0, bas: 5, gozluk: 0, boyun: 0, zemin: 0 }, son: 'mat-mutlak', jeton: 185, tarama: true, yazili: { 'mat-uslu/a1': [0, 1, 2], 'mat-uslu/a3': [0, 1] } });
   st.plan = { ...st.plan, kuruldu: true };
   const cevap: Cevap[] = [], tekrar: Record<string, Tekrar> = {};
 
@@ -32,7 +32,7 @@ function deniz(d: number): State {
     tekrar[id] = { ...t, kutu: t.kutu + 1, son: d - once + ARALIK[t.kutu + 1] };
   };
 
-  // Üslü Sayılar: bitmiş, üç yanlış tekrarla toparlanmış. İkisi bugün yeniden soruluyor.
+  // Üslü Gösterim: bitmiş, üç yanlış tekrarla toparlanmış. İkisi bugün yeniden soruluyor.
   kartlar('mat-uslu', 10);
   test('mat-uslu', 9, { 4: 0, 5: 2, 8: 2 }, [1, 2, 3, 6]);
   tekrarDogru('mat-uslu', 4, 5); tekrarDogru('mat-uslu', 5, 5); tekrarDogru('mat-uslu', 8, 5);
@@ -44,7 +44,7 @@ function deniz(d: number): State {
   tekrarDogru('fiz-ozkutle', 5, 5); tekrarDogru('fiz-ozkutle', 5, 2); tekrarDogru('fiz-ozkutle', 6, 5);
   tekrar['fiz-ozkutle/s6'].son = d + 1;
 
-  // Köklü Sayılar: zayıf; "tekrar bak" listesinin başı.
+  // Köklü Gösterim: zayıf; "tekrar bak" listesinin başı.
   kartlar('mat-koklu', 5);
   test('mat-koklu', 4, { 1: 4, 3: 0, 5: 4, 6: 3, 8: 2 }, [1, 2, 3]);
   tekrar['mat-koklu/s1'].son = d; tekrar['mat-koklu/s3'].son = d;
@@ -65,7 +65,7 @@ function deniz(d: number): State {
 
 const ADLAR = ['Elif', 'Mert', 'Zeynep', 'Arda', 'Defne', 'Kerem', 'Nisa', 'Emir', 'İrem', 'Baran', 'Azra'];
 const rnd = (n: number) => { const x = Math.sin(n * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };
-/** Sınıfın geri kalanı: tohumlu rastgele sayılarla üretilir, her açılışta aynı çıkar. Sınıf Köklü Sayılar'da daha çok yanılır. */
+/** Sınıfın geri kalanı: tohumlu rastgele sayılarla üretilir, her açılışta aynı çıkar. Sınıf Köklü Gösterim'de daha çok yanılır. */
 function ogrenci(i: number, ad: string, d: number): State {
   const r = (n: number) => rnd(i * 97 + n);
   const beceri = 0.1 + r(1) * 0.42;

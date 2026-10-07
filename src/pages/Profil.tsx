@@ -139,7 +139,7 @@ export default function Profil() {
           )}
 
           <Card title="Hesap">
-            {ogrenci && <div className="ayar"><div className="grow"><b>Sınıfın</b><small>Sıralama ve öğretmen ekranı buna göre gruplanır.</small></div><input className="input" style={{ width: 110 }} value={st.sinif} maxLength={8} placeholder="11-A" onChange={(e) => set({ sinif: e.target.value })} aria-label="Sınıfın" /></div>}
+            {ogrenci && <div className="ayar"><div className="grow"><b>Sınıfın</b><small>Sıralama ve öğretmen ekranı buna göre gruplanır.</small></div><input className="input" style={{ width: 110 }} value={st.sinif} maxLength={8} placeholder="9-A" onChange={(e) => set({ sinif: e.target.value })} aria-label="Sınıfın" /></div>}
             {ogrenci && <div className="ayar"><div className="grow"><b>Günlük hedef</b><small>Bir günde kazanmak istediğin puan.</small></div><Seg id="hedef" value={st.hedef} onChange={(v) => set({ hedef: v })} options={[{ id: 30, label: '30' }, { id: 50, label: '50' }, { id: 100, label: '100' }]} /></div>}
             <div className="ayar"><div className="grow"><b>Çıkış yap</b><small>Hesabın bu cihazda kalır; başkası kendi hesabıyla girebilir.</small></div><button className="btn" onClick={cikis}><LogOut size={15} />Çıkış</button></div>
             {ogrenci && (

@@ -1,6 +1,7 @@
 # İD Okul
 
-TYT ders çalışma portalı: konu anlatımı, kavrama testi, yanlışlara göre tekrar, kişisel program ve rapor.
+Ders çalışma portalı: konu anlatımı, kavrama testi, yanlışlara göre tekrar, yazılı provası, kişisel program ve rapor.
+Konular Türkiye Yüzyılı Maarif Modeli öğretim programına ve MEB kaynaklarına göre yazılır.
 İD ailesinin bir parçası (İD Kalem, İD Analiz, İD Okul).
 
 ## Çalıştırmak
@@ -20,7 +21,31 @@ Tanıtım ve deneme için adres çubuğu kısayolları:
 | `?tema=koyu` ya da `?tema=acik` | Temayı seçer |
 | `?anim=0` | Hareketleri kapatır (ekran görüntüsü için) |
 
-## Neler var (v0.2)
+## v0.3: Maarif Modeli'ne göre içerik
+
+Bir konu artık şöyle kurulur: **yaklaşık 17 dakika anlatım + 13 dakika kavrama testi = 30 dakika**, isteyene yazılı provası.
+
+- **Öğrenme çıktıları.** Dersler ekranında 9, 10 ve 11. sınıf sekmeleri var. Türk Dili ve Edebiyatı, Matematik, Fizik, Kimya ve Biyoloji için
+  MEB'in 2026-2027 1. dönem konu soru dağılım tabloları uygulamaya aktarıldı (149 öğrenme çıktısı). Her çıktının yanında yazılıda
+  kaç soru geleceği yazar. Tablo `src/content/mufredat.ts` dosyasındadır ve elle yazılmaz, MEB'in Excel dosyalarından üretilir.
+- **Kaynağa dayalı konu.** Konu sayfasının başında "Bu konu neye göre yazıldı?" kutusu durur: öğrenme çıktısı, öğretim programındaki
+  süreç bileşenleri, ders kitabındaki yeri ve anlatımın izlediği sıra.
+- **Anlatım kartı.** Ders kitabındaki bir durumla başlar, örüntüyü tabloda gösterir, kuralı verir, örnek çözer, bir kontrol sorusu sorar.
+- **Soru türleri.** İşlem, bağlam temelli (durum ve tablo) ve muhakeme (önerme, "ilk hata hangi adımda"). Her soru beş seçeneklidir;
+  yanlış seçenekler adı konmuş yanılgılara bağlıdır. Cevaplandıktan sonra sorunun neye göre yazıldığı görünür.
+- **Yazılı provası.** Açık uçlu sorular kâğıtta çözülür; puanlama anahtarı açılır ve adımlar tek tek işaretlenir.
+- **Kaynaklar sayfası.** Hangi resmî kaynağın nerede kullanıldığı, bağlantılarıyla.
+
+Bu yöntemle yazılan konular: **Üslü Gösterim** ve **Köklü Gösterim** (9. sınıf, MAT.9.1.1). Mutlak Değer, Oran ve Orantı,
+Yazım Kuralları ile Madde ve Özkütle önceki sürümden kalan TYT tekrarı konularıdır.
+
+**Durum:** anlatımlar ve sorular kaynaklardaki sıra, durum ve soru tiplerine göre yapay zekâ desteğiyle yazıldı; ders kitabının
+kopyası değildir. Henüz bir öğretmen incelemedi. Sınıfta kullanılmadan önce dersin öğretmeni gözden geçirmelidir.
+
+Yeni bir konu yazarken: `src/content/tip.ts` içerik biçimini anlatır; `npm run build` içeriği denetler (cevap anahtarı, beş seçenek,
+tablo hücreleri, puanlama anahtarı 10 puan, öğrenme çıktısı tabloda var mı). `npx tsx scripts/sayim.ts` konu konu sayım verir.
+
+## Neler var (v0.2'den beri)
 
 - **Hesaplar.** Her öğrencinin kendi hesabı, dört haneli şifresi ve avatarı var. Öğretmen hesabı ayrı bir ekran görür.
 - **Yol haritası.** Her dersin konuları sırayla kıvrılan bir yolun durakları: bitti, sürüyor, sırada. Testi bitirince yıldız kazanılır.
@@ -82,9 +107,11 @@ Bu yüzden göndermeden önce `npm run build` çalıştır.
 
 ## Klasörler
 
-- `src/content/` konu anlatımları ve sorular (her konu bir dosya)
+- `src/content/` konu anlatımları ve sorular (her konu bir dosya); `mufredat.ts` MEB tablolarından üretilen öğrenme çıktıları
 - `src/pages/` ekranlar
 - `src/store.ts` hesaplar ve kayıt; `src/engine.ts` hesaplamalar (program, rapor, sınıf)
 - `src/avatar.tsx` avatar ve parçaları; `src/ai.ts`, `src/sohbet.tsx` yapay zekâ öğretmen
-- `scripts/kontrol.ts` içerik denetimi: cevap anahtarı, çözüm adımları, yanılgı etiketleri
+- `scripts/kontrol.ts` içerik denetimi: cevap anahtarı, çözüm adımları, yanılgı etiketleri, tablolar, resmî dayanak
+- `scripts/sayim.ts` konu konu sayım: soru türleri, yanılgıya bağlı seçenek sayısı, süre
+- `scripts/meb/` MEB konu soru dağılım tablolarını aktarır: `xlsx.py` Excel dosyasını düz metne, `mufredat.py` o metni `mufredat.ts` dosyasına çevirir
 - `scripts/tekdosya.mjs` derlemeyi tek HTML dosyasına toplar

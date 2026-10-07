@@ -43,6 +43,8 @@ export interface State {
   don: number; donGun: number[];
   /** seviye taraması yapıldı mı */
   tarama: boolean;
+  /** yazılı provası: `${konu}/${soru}` → puanlama anahtarında işaretlenen adımlar */
+  yazili?: Record<string, number[]>;
 }
 /** Öğretmenin verdiği ödev: bir konunun kavrama testi, son günüyle. */
 export interface Odev { id: string; konu: string; verildi: number; son: number }

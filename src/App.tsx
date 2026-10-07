@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { HashRouter, Routes, Route, NavLink, Link, useLocation, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'motion/react';
-import { House, BookOpen, RotateCcw, ChartColumn, UserRound, ArrowLeft, ArrowRight, Sun, Moon, Flame, Zap, Coins, CalendarRange, Sparkles, Users, LogOut, type LucideIcon } from 'lucide-react';
+import { House, BookOpen, RotateCcw, ChartColumn, UserRound, ArrowLeft, ArrowRight, Sun, Moon, Flame, Zap, Coins, CalendarRange, Sparkles, Users, LogOut, Landmark, type LucideIcon } from 'lucide-react';
 import { APP } from './content';
 import { useStore, useKok, useUi, setKok, cikis } from './store';
 import { bekleyenler, seri } from './engine';
@@ -18,9 +18,13 @@ import Zeka from './pages/Zeka';
 import Rapor from './pages/Rapor';
 import Profil from './pages/Profil';
 import Sinif from './pages/Sinif';
+import Mufredat from './pages/Mufredat';
+import Yazili from './pages/Yazili';
+import Kaynaklar from './pages/Kaynaklar';
 
 interface Nav { to: string; label: string; icon: LucideIcon; k: string; also?: string[] }
-const DERSLER_NAV: Nav = { to: '/dersler', label: 'Dersler', icon: BookOpen, k: '#6a4fe0', also: ['/ders/', '/konu/'] };
+const DERSLER_NAV: Nav = { to: '/dersler', label: 'Dersler', icon: BookOpen, k: '#6a4fe0', also: ['/ders/', '/konu/', '/mufredat/'] };
+const KAYNAK_NAV: Nav = { to: '/kaynaklar', label: 'Kaynaklar', icon: Landmark, k: '#7a5af0' };
 const PROFIL_NAV: Nav = { to: '/profil', label: 'Profil', icon: UserRound, k: '#f0772b' };
 const NAV_OGRENCI: Nav[] = [
   { to: '/', label: 'Bugün', icon: House, k: '#2b6fe8' },
@@ -29,9 +33,10 @@ const NAV_OGRENCI: Nav[] = [
   { to: '/tekrar', label: 'Yanlışlarım', icon: RotateCcw, k: '#e5484d' },
   { to: '/ai', label: 'Yapay zekâ', icon: Sparkles, k: '#c2409a' },
   { to: '/rapor', label: 'Rapor', icon: ChartColumn, k: '#1baf7a' },
+  KAYNAK_NAV,
   PROFIL_NAV,
 ];
-const NAV_OGRETMEN: Nav[] = [{ to: '/', label: 'Sınıf', icon: Users, k: '#2b6fe8' }, DERSLER_NAV, { to: '/ai', label: 'Yapay zekâ', icon: Sparkles, k: '#c2409a' }, PROFIL_NAV];
+const NAV_OGRETMEN: Nav[] = [{ to: '/', label: 'Sınıf', icon: Users, k: '#2b6fe8' }, DERSLER_NAV, { to: '/ai', label: 'Yapay zekâ', icon: Sparkles, k: '#c2409a' }, KAYNAK_NAV, PROFIL_NAV];
 
 function Shell() {
   const st = useStore(), kok = useKok();
@@ -43,7 +48,7 @@ function Shell() {
   return (
     <div className="app">
       <aside className="side no-print">
-        <Link to="/" className="brand"><Logo /><div><b>{APP}</b><small>{ogretmen ? 'Öğretmen ekranı' : 'TYT çalışma portalı'}</small></div></Link>
+        <Link to="/" className="brand"><Logo /><div><b>{APP}</b><small>{ogretmen ? 'Öğretmen ekranı' : 'Ders çalışma portalı'}</small></div></Link>
         <nav className="nav">
           {NAV.map((n) => {
             const on = n.to === '/' ? loc.pathname === '/' : loc.pathname.startsWith(n.to) || !!n.also?.some((a) => loc.pathname.startsWith(a));
@@ -81,6 +86,9 @@ function Shell() {
           <Route path="/konu/:id" element={<KonuSayfa />} />
           <Route path="/konu/:id/anlatim" element={<Anlatim />} />
           <Route path="/konu/:id/test" element={<TestSayfa />} />
+          <Route path="/konu/:id/yazili" element={<Yazili />} />
+          <Route path="/mufredat/:sinif/:ders" element={<Mufredat />} />
+          <Route path="/kaynaklar" element={<Kaynaklar />} />
           <Route path="/tekrar" element={<Yanlislar />} />
           <Route path="/tekrar/coz" element={<TekrarSayfa key={loc.search} />} />
           <Route path="/tarama" element={<TaramaSayfa />} />

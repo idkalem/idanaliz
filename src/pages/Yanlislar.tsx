@@ -6,7 +6,7 @@ import { useStore, bugun, OGRENILDI, ARALIK } from '../store';
 import { defter, neZaman, dersOf, type Bekleyen } from '../engine';
 import { M } from '../math';
 import { Page, Card, Tile, Tabs, Empty, kOf } from '../ui';
-import { Secenekler, Cozum, Takil } from '../parca';
+import { Secenekler, Cozum, Takil, SoruMetni } from '../parca';
 
 export default function Yanlislar() {
   const st = useStore();
@@ -74,7 +74,7 @@ function Satir({ x, d, acik, onAc }: { x: Bekleyen; d: number; acik: boolean; on
       </button>
       {acik && (
         <div className="yl-ic">
-          <div className="soru-kok"><M>{soru.s}</M></div>
+          <SoruMetni soru={soru} />
           <Secenekler o={soru.o} sec={t.sec} dogru={soru.d} durum="goster" />
           <p className="note" style={{ marginTop: 10 }}>Kırmızı senin son cevabın, yeşil doğru cevap.</p>
           {yan && <Takil yan={yan} baslik="Takıldığın yer" />}

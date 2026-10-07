@@ -2,7 +2,7 @@
 // Anahtar bu cihaza bir kez girilir (Profil > Yapay zekâ) ve yalnızca api.anthropic.com adresine gönderilir.
 // Öğrencinin adı ve sınıfı gönderilmez; yalnızca üzerinde çalışılan soru ve konunun metni gider.
 import { getKok } from './store';
-import type { Konu, Kart, Soru } from './content';
+import type { Konu, Kart, Soru, Tablo } from './content';
 
 export const MODELLER: { id: string; ad: string; ne: string }[] = [
   { id: 'claude-opus-5-5', ad: 'Opus 5.5', ne: 'En yetenekli' },
@@ -12,7 +12,7 @@ export const MODELLER: { id: string; ad: string; ne: string }[] = [
 export interface Mesaj { rol: 'user' | 'assistant'; metin: string; resim?: { tur: string; veri: string } }
 export const aiHazir = () => !!getKok().ai.anahtar.trim();
 
-const TEMEL = `Sen İD Okul'un yapay zekâ öğretmenisin. Karşındaki, TYT'ye hazırlanan bir lise öğrencisi.
+const TEMEL = `Sen İD Okul'un yapay zekâ öğretmenisin. Karşındaki bir lise öğrencisi; okul yazılılarına ve TYT'ye hazırlanıyor.
 Kurallar:
 - Türkçe yaz, "sen" diye seslen. Kısa yaz: çoğu yanıt 3-6 cümle.
 - Cevabı hemen verme. Önce öğrencinin nerede takıldığını bulduran bir soru ya da küçük bir ipucu ver. Yine takılırsa bir sonraki adımı göster. Tam çözümü ancak üçüncü denemede ya da öğrenci açıkça "çözümü göster" derse yaz.
@@ -23,16 +23,18 @@ Kurallar:
 export const sistem = (baglam = '', ek = '') => [TEMEL, ek, baglam && `Öğrencinin şu an baktığı içerik:\n${baglam}`].filter(Boolean).join('\n\n');
 
 const HARF = 'ABCDE';
+const tabloYazi = (t: Tablo) => [t.bas.join(' | '), ...t.sat.map((r) => r.join(' | '))].join('\n');
 export function soruBaglami(konu: Konu, soru: Soru, sec?: number | null): string {
   const yan = sec != null ? konu.yan[soru.y[sec] ?? ''] : undefined;
   return [
-    `Konu: ${konu.ad}`, `Soru: ${soru.s}`, `Seçenekler: ${soru.o.map((x, i) => `${HARF[i]}) ${x}`).join('   ')}`, `Doğru cevap: ${HARF[soru.d]}`,
+    `Konu: ${konu.ad}`, soru.b && `Sorunun bağlamı: ${soru.b.join(' ')}`, soru.t && `Bağlamdaki tablo:\n${tabloYazi(soru.t)}`,
+    `Soru: ${soru.s}`, `Seçenekler: ${soru.o.map((x, i) => `${HARF[i]}) ${x}`).join('   ')}`, `Doğru cevap: ${HARF[soru.d]}`,
     sec != null && `Öğrencinin işaretlediği: ${HARF[sec]}`,
     yan && `Bu seçeneğin arkasındaki olası yanılgı: ${yan.ad}. ${yan.anlat}`,
     `Çözüm adımları: ${soru.c.join(' | ')}`,
   ].filter(Boolean).join('\n');
 }
-export const kartBaglami = (konu: Konu, kart: Kart) => [`Konu: ${konu.ad}`, `Anlatım kartı: ${kart.baslik}`, ...kart.metin, kart.kural && `Kural: ${kart.kural.join(' ; ')}`, kart.ornek && `Örnek: ${kart.ornek.s} Çözüm: ${kart.ornek.a.join(' | ')}`].filter(Boolean).join('\n');
+export const kartBaglami = (konu: Konu, kart: Kart) => [`Konu: ${konu.ad}`, `Anlatım kartı: ${kart.baslik}`, kart.giris, ...kart.metin, kart.tablo && `Tablo:\n${tabloYazi(kart.tablo)}`, kart.kural && `Kural: ${kart.kural.join(' ; ')}`, kart.ornek && `Örnek: ${kart.ornek.s} Çözüm: ${kart.ornek.a.join(' | ')}`].filter(Boolean).join('\n');
 export const konuBaglami = (konu: Konu) => [`Konu: ${konu.ad}`, konu.giris, 'Özet:', ...konu.ozet.map((o) => `- ${o}`), 'Sık yapılan hatalar:', ...Object.values(konu.yan).map((y) => `- ${y.ad}: ${y.anlat}`)].join('\n');
 
 function hataYazisi(durum: number, mesaj: string): string {
